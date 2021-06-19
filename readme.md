@@ -1,2 +1,1 @@
-Software architectures for implementation of a distributed autonomous organization (DAO) using blockchain technology 
-Diploma Project 2021
+This is the Hyperledger Sawtooth implementation of the Project
