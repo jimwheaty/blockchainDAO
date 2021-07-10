@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
-	"github.com/jimwheaty/blockchainDAO/tree/hyperledger_fabric_v2.2/chaincode-go/chaincode"
+	"github.com/jimwheaty/blockchainDAO/chaincode-vote/chaincode"
 )
 
 func main() {

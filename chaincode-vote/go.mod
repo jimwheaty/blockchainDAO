@@ -1,4 +1,4 @@
-module github.com/jimwheaty/blockchainDAO@hyperledger_fabric_v2.2
+module github.com/jimwheaty/blockchainDAO
 
 go 1.16
 

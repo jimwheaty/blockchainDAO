@@ -27,7 +27,7 @@ type board struct {
 }
 
 type vote struct {
-	id		string	`json:"id"`
+	id      string  `json:"id"`
 	message string  `json:"message"`
 	counter counter `json:"counter"`
 	board   board   `json:"board"`
@@ -36,17 +36,17 @@ type vote struct {
 // InitLedger adds a base set of assets to the ledger
 func (s *SmartContract) CreateVote(ctx contractapi.TransactionContextInterface) error {
 	vote := vote{
-		id : "vote1",
-		message : "", 
-		counter : counter{
-			yes : 0,
-			no : 0,
-			undefined : 2,
+		id:      "vote1",
+		message: "",
+		counter: counter{
+			yes:       0,
+			no:        0,
+			undefined: 2,
 		},
-		board : board{
-			org1 : nil,
-			org2 : nil,
-		}
+		board: board{
+			org1: nil,
+			org2: nil,
+		},
 	}
 
 	assetJSON, err := json.Marshal(vote)
@@ -54,7 +54,7 @@ func (s *SmartContract) CreateVote(ctx contractapi.TransactionContextInterface) 
 		return err
 	}
 
-	err = ctx.GetStub().PutState(asset.ID, assetJSON)
+	err = ctx.GetStub().PutState(vote.id, assetJSON)
 	if err != nil {
 		return fmt.Errorf("failed to put to world state. %v", err)
 	}
