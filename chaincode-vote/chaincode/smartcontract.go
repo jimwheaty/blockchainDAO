@@ -61,3 +61,57 @@ func (s *SmartContract) CreateVote(ctx contractapi.TransactionContextInterface) 
 
 	return nil
 }
+
+// ReadAsset returns the asset stored in the world state with given id.
+func (s *SmartContract) ReadVote(ctx contractapi.TransactionContextInterface, id string) (*vote, error) {
+	voteJSON, err := ctx.GetStub().GetState(id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read from world state: %v", err)
+	}
+	if voteJSON == nil {
+		return nil, fmt.Errorf("the vote %s does not exist", id)
+	}
+
+	var vote vote
+	err = json.Unmarshal(voteJSON, &vote)
+	if err != nil {
+		return nil, err
+	}
+
+	return &vote, nil
+}
+
+// UpdateAsset updates an existing asset in the world state with provided parameters.
+func (s *SmartContract) UpdateVote(ctx contractapi.TransactionContextInterface, id string, message string, counter counter, board board) error {
+	exists, err := s.VoteExists(ctx, id)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return fmt.Errorf("the vote %s does not exist", id)
+	}
+
+	// overwriting original asset with new asset
+	vote := vote{
+		ID:      id,
+		Message: message,
+		Counter: counter,
+		Board:   board,
+	}
+	voteJSON, err := json.Marshal(vote)
+	if err != nil {
+		return err
+	}
+
+	return ctx.GetStub().PutState(id, voteJSON)
+}
+
+// AssetExists returns true when asset with given ID exists in world state
+func (s *SmartContract) VoteExists(ctx contractapi.TransactionContextInterface, id string) (bool, error) {
+	voteJSON, err := ctx.GetStub().GetState(id)
+	if err != nil {
+		return false, fmt.Errorf("failed to read from world state: %v", err)
+	}
+
+	return voteJSON != nil, nil
+}
