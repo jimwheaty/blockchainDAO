@@ -1,2 +1,1 @@
-Software architectures for implementation of a distributed autonomous organization (DAO) using blockchain technology 
-Diploma Project 2021
+This is the Hyperledger Fabric implementation of the Project
