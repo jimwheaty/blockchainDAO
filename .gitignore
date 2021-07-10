@@ -1,0 +1,9 @@
+
+test-network/basic.tar.gz
+test-network/basic.tar.gz
+test-network/basic.tar.gz
+test-network/channel-artifacts/mychannel.block
+test-network/channel-artifacts/mychannel.tx
+test-network/log.txt
+test-network/organizations/ordererOrganizations/example.com/ca/ca.example.com-cert.pem
+test-network/organizations/ordererOrganizations/example.com/ca/priv_sk

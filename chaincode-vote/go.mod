@@ -1,4 +1,4 @@
-module github.com/jimwheaty/blockchainDAO
+module github.com/jimwheaty/blockchainDAO/chaincode-go
 
 go 1.16
 
