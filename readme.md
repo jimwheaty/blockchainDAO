@@ -1,1 +1,1 @@
-This is the Hyperledger Sawtooth implementation of the Project
+This is the Hyperledger Fabric implementation of the Project
