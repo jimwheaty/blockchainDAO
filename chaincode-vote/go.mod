@@ -1,4 +1,4 @@
-module github.com/jimwheaty/blockchainDAO/chaincode-go
+module github.com/jimwheaty/blockchainDAO/chaincode-vote
 
 go 1.16
 
