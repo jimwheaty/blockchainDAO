@@ -13,24 +13,6 @@ type SmartContract struct {
 }
 
 // Vote describes basic details of what makes up a simple vote
-// type counter struct {
-// 	Yes       int `json:"yes"`
-// 	No        int `json:"no"`
-// 	Undefined int `json:"undefined"`
-// }
-
-// type board struct {
-// 	Org1 string `json:"org1"`
-// 	Org2 string `json:"org2"`
-// }
-
-// type vote struct {
-// 	ID         string  `json:"id"`
-// 	Message    string  `json:"message"`
-// 	Counter    counter `json:"counter"`
-// 	Board      board   `json:"board"`
-// 	IsFinished bool    `json:"isFinished"`
-// }
 type vote struct {
 	ID         string            `json:"id"`
 	Message    string            `json:"message"`
@@ -106,25 +88,11 @@ func (s *SmartContract) DoVote(ctx contractapi.TransactionContextInterface, addr
 	}
 
 	if vote_field == "yes" || vote_field == "no" {
-		// counter := map[string]*int{
-		// 	"yes": &vote.Counter.Yes,
-		// 	"no":  &vote.Counter.No,
-		// 	"":    &vote.Counter.Undefined,
-		// }
-		// board := map[string]*string{
-		// 	"Org1": &vote.Board.Org1,
-		// 	"Org2": &vote.Board.Org2,
-		// }
-
-		// *counter[*board[address]] -= 1
-		// *board[address] = vote_field
-		// *counter[*board[address]] += 1
 
 		vote.Counter[vote.Board[address]] -= 1
 		vote.Board[address] = vote_field
 		vote.Counter[vote.Board[address]] += 1
 
-		// if vote.Counter.Yes > (vote.Counter.No + vote.Counter.Undefined) {
 		if vote.Counter["yes"] > (vote.Counter["no"] + vote.Counter[""]) {
 			vote.Message = "The vote is done. The result is Yes"
 			vote.IsFinished = true
@@ -154,4 +122,13 @@ func (s *SmartContract) VoteExists(ctx contractapi.TransactionContextInterface, 
 	}
 
 	return voteJSON != nil, nil
+}
+
+func (s *SmartContract) GetAddress(ctx contractapi.TransactionContextInterface) (address string, error error) {
+	creator, err := ctx.GetClientIdentity().GetID()
+	if err != nil {
+		return "", fmt.Errorf("failed to read address from context: %v", err)
+	}
+
+	return creator, nil
 }

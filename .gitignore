@@ -1,5 +1,3 @@
-bin/*
-config/*
 # omit Go vendor directories
 vendor/
 .vscode
