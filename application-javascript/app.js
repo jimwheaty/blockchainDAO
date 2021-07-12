@@ -10,13 +10,16 @@ const { Gateway, Wallets } = require('fabric-network');
 const FabricCAServices = require('fabric-ca-client');
 const path = require('path');
 const { buildCAClient, registerAndEnrollUser, enrollAdmin } = require('./Utils/CAUtil');
-const { buildCCPOrg1, buildWallet } = require('./Utils/AppUtil');
+const { buildCCPOrg1, buildCCPOrg2, buildWallet } = require('./Utils/AppUtil');
 
 const channelName = 'mychannel';
 const chaincodeName = 'vote';
-const mspOrg1 = 'Org1MSP';
 const walletPath = path.join(__dirname, 'wallet');
-const org1UserId = 'appUser';
+const orgUserId = 'appUser';
+
+// please give 'org1' or 'org2' as argument
+const org = process.argv[2];
+const mspOrg = org == 'org1' ? 'Org1MSP' : 'Org2MSP';
 
 function prettyJSONString(inputString) {
 	return JSON.stringify(JSON.parse(inputString), null, 2);
@@ -72,21 +75,21 @@ function prettyJSONString(inputString) {
 async function main() {
 	try {
 		// build an in memory object with the network configuration (also known as a connection profile)
-		const ccp = buildCCPOrg1();
+		const ccp = org == 'org1' ? buildCCPOrg1() : buildCCPOrg2();
 
 		// build an instance of the fabric ca services client based on
 		// the information in the network configuration
-		const caClient = buildCAClient(FabricCAServices, ccp, 'ca.org1.example.com');
+		const caClient = buildCAClient(FabricCAServices, ccp, 'ca.'+org+'.example.com');
 
 		// setup the wallet to hold the credentials of the application user
 		const wallet = await buildWallet(Wallets, walletPath);
 
 		// in a real application this would be done on an administrative flow, and only once
-		await enrollAdmin(caClient, wallet, mspOrg1);
+		await enrollAdmin(caClient, wallet, mspOrg);
 
 		// in a real application this would be done only when a new user was required to be added
 		// and would be part of an administrative flow
-		await registerAndEnrollUser(caClient, wallet, mspOrg1, org1UserId, 'org1.department1');
+		await registerAndEnrollUser(caClient, wallet, mspOrg, orgUserId, org+'.department1');
 
 		// Create a new gateway instance for interacting with the fabric network.
 		// In a real application this would be done as the backend server session is setup for
@@ -100,7 +103,7 @@ async function main() {
 			// signed by this user using the credentials stored in the wallet.
 			await gateway.connect(ccp, {
 				wallet,
-				identity: org1UserId,
+				identity: orgUserId,
 				discovery: { enabled: true, asLocalhost: true } // using asLocalhost as this gateway is using a fabric network deployed locally
 			});
 
@@ -110,13 +113,19 @@ async function main() {
 			// Get the contract from the network.
 			const contract = network.getContract(chaincodeName);
 
+			console.log('\n--> Evaluate Transaction: VoteExists returns true if the vote exists in the world state with given id.');
+			let exists = await contract.evaluateTransaction('VoteExists', 'vote1');
+			console.log(`*** Result: ${prettyJSONString(exists.toString())}`);
+			
 			// Initialize a set of asset data on the channel using the chaincode 'InitLedger' function.
 			// This type of transaction would only be run once by an application the first time it was started after it
 			// deployed the first time. Any updates to the chaincode deployed later would likely not need to run
 			// an "init" type function.
-			console.log('\n--> Submit Transaction: CreateVote initializes a vote to the ledger');
-			await contract.submitTransaction('CreateVote');
-			console.log('*** Result: committed');
+			if (exists == 'false') {
+				console.log('\n--> Submit Transaction: CreateVote initializes a vote to the ledger');
+				await contract.submitTransaction('CreateVote');
+				console.log('*** Result: committed');
+			}
 
 			// Let's try a query type operation (function).
 			// This will be sent to just one peer and the results will be shown.
@@ -128,7 +137,7 @@ async function main() {
 			// This will be sent to both peers and if both peers endorse the transaction, the endorsed proposal will be sent
 			// to the orderer to be committed by each of the peer's to the channel ledger.
 			console.log('\n--> Submit Transaction: DoVote updates an existing vote in the world state with provided id and vote field');
-			result = await contract.submitTransaction('DoVote', 'org1', 'vote1', 'yes');
+			result = await contract.submitTransaction('DoVote', org, 'vote1', 'yes');
 			console.log('*** Result: committed');
 			if (`${result}` !== '') {
 				console.log(`*** Result: ${prettyJSONString(result.toString())}`);

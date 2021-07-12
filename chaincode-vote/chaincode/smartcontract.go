@@ -124,11 +124,24 @@ func (s *SmartContract) VoteExists(ctx contractapi.TransactionContextInterface, 
 	return voteJSON != nil, nil
 }
 
-func (s *SmartContract) GetAddress(ctx contractapi.TransactionContextInterface) (address string, error error) {
-	creator, err := ctx.GetClientIdentity().GetID()
+// DeleteAsset deletes an given asset from the world state.
+func (s *SmartContract) DeleteVote(ctx contractapi.TransactionContextInterface, id string) error {
+	exists, err := s.VoteExists(ctx, id)
 	if err != nil {
-		return "", fmt.Errorf("failed to read address from context: %v", err)
+		return err
+	}
+	if !exists {
+		return fmt.Errorf("the vote %s does not exist", id)
 	}
 
-	return creator, nil
+	return ctx.GetStub().DelState(id)
 }
+
+// func (s *SmartContract) GetAddress(ctx contractapi.TransactionContextInterface) (address string, error error) {
+// 	creator, err := ctx.GetClientIdentity().GetID()
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to read address from context: %v", err)
+// 	}
+
+// 	return creator, nil
+// }
