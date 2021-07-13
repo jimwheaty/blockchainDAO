@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -18,71 +19,63 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 )
 
-// pre-requisites:
-// - fabric-sample two organization test-network setup with two peers, ordering service,
-//   and 2 certificate authorities
-//         ===> from directory /fabric-samples/test-network
-//         ./network.sh up createChannel -ca
-// - Use any of the asset-transfer-basic chaincodes deployed on the channel "mychannel"
-//   with the chaincode name of "basic". The following deploy command will package,
-//   install, approve, and commit the javascript chaincode, all the actions it takes
-//   to deploy a chaincode to a channel.
-//         ===> from directory /fabric-samples/test-network
-//         ./network.sh deployCC -ccn basic -ccp ../asset-transfer-basic/chaincode-javascript/ -ccl javascript
-// - Be sure that node.js is installed
-//         ===> from directory /fabric-samples/asset-transfer-basic/application-javascript
-//         node -v
-// - npm installed code dependencies
-//         ===> from directory /fabric-samples/asset-transfer-basic/application-javascript
-//         npm install
-// - to run this test application
-//         ===> from directory /fabric-samples/asset-transfer-basic/application-javascript
-//         node app.js
-
-// NOTE: If you see  kind an error like these:
-/*
-    2020-08-07T20:23:17.590Z - error: [DiscoveryService]: send[mychannel] - Channel:mychannel received discovery error:access denied
-    ******** FAILED to run the application: Error: DiscoveryService: mychannel error: access denied
-
-   OR
-
-   Failed to register user : Error: fabric-ca request register failed with errors [[ { code: 20, message: 'Authentication failure' } ]]
-   ******** FAILED to run the application: Error: Identity not found in wallet: appUser
-*/
-// Delete the /fabric-samples/asset-transfer-basic/application-javascript/wallet directory
-// and retry this application.
-//
-// The certificate authority must have been restarted and the saved certificates for the
-// admin and application user are not valid. Deleting the wallet store will force these to be reset
-// with the new certificate authority.
-//
-
 var contract *gateway.Contract
+var org string
+var vote string = "yes"
+
+type simpleResponse struct {
+	Message string `json:"message"`
+}
+
+// Vote describes basic details of what makes up a simple vote
+type voteResponse struct {
+	ID         string            `json:"id"`
+	Message    string            `json:"message"`
+	Counter    map[string]int    `json:"counter"`
+	Board      map[string]string `json:"board"`
+	IsFinished bool              `json:"isFinished"`
+}
 
 func homePage(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Welcome to the HomePage!")
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	fmt.Println("Endpoint Hit: homePage")
+	message := "Welcome to the HomePage!"
+	response := simpleResponse{Message: message}
+	json.NewEncoder(w).Encode(response)
 }
 
 func createVote(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	fmt.Println("Endpoint Hit: createVote")
-	result, err := contract.EvaluateTransaction("VoteExists", "vote1")
+	// log.Println("--> Evaluate Transaction: VoteExists() checks if a vote exists in the ledger")
+	// result, err := contract.EvaluateTransaction("VoteExists", "vote1")
+	// if err != nil {
+	// 	fmt.Fprintf(w, "CreateVote failed: VoteExists failed")
+	// 	log.Fatalf("Failed to evaluate transaction: %v", err)
+	// }
+	// log.Println("VoteExists " + string(result))
+
+	var message string
+	// if string(result) == "false" {
+	log.Println("--> Submit Transaction: CreateVote() initializes a vote to the ledger")
+	result, err := contract.SubmitTransaction("CreateVote")
 	if err != nil {
-		log.Fatalf("Failed to evaluate transaction: %v", err)
+		log.Fatalf("Failed to Submit transaction: %v", err)
 	}
-	log.Println(string(result))
-	if string(result) == "false" {
-		log.Println("--> Submit Transaction: CreateVote() initializes a vote to the ledger")
-		result, err = contract.SubmitTransaction("CreateVote")
-		if err != nil {
-			log.Fatalf("Failed to Submit transaction: %v", err)
-		}
-		log.Println(string(result))
-	}
-	fmt.Fprint(w, string(result))
+	// message = "Vote1 doesn't exist... \nCreateVote " + string(result)
+	message = "CreateVote" + string(result)
+	// } else {
+	// 	message = "Vote1 already exists..."
+	// }
+	response := simpleResponse{Message: message}
+	json.NewEncoder(w).Encode(response)
 }
 
 func readVote(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	fmt.Println("Endpoint Hit: readVote")
 	log.Println("--> Evaluate Transaction: ReadVote() returns the vote stored in the world state with given id")
 	result, err := contract.EvaluateTransaction("ReadVote", "vote1")
@@ -90,41 +83,55 @@ func readVote(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("Failed to evaluate transaction: %v", err)
 	}
 	log.Println(string(result))
-	fmt.Fprint(w, string(result))
+	var message voteResponse
+	json.Unmarshal(result, &message)
+	json.NewEncoder(w).Encode(message)
+	// fmt.Fprint(w, string(result))
 }
 
 func doVote(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	fmt.Println("Endpoint Hit: doVote")
 	log.Println("--> Submit Transaction: DoVote() updates an existing vote in the world state with provided id and vote field")
-	result, err := contract.SubmitTransaction("DoVote", "org1", "vote1", "yes")
+	result, err := contract.SubmitTransaction("DoVote", org, "vote1", vote)
 	if err != nil {
 		log.Fatalf("Failed to Submit transaction: %v", err)
 	}
-	log.Println(string(result))
-	fmt.Fprint(w, string(result))
+	// fmt.Fprint(w, "DoVote "+string(result))
+	message := "DoVote " + string(result)
+	response := simpleResponse{Message: message}
+	json.NewEncoder(w).Encode(response)
 }
 
-func handleRequests(contract *gateway.Contract) {
+func handleRequests(contract *gateway.Contract, port string) {
 	http.HandleFunc("/", homePage)
-	http.HandleFunc("/read", readVote)
 	http.HandleFunc("/create", createVote)
+	http.HandleFunc("/read", readVote)
 	http.HandleFunc("/do", doVote)
-	log.Fatal(http.ListenAndServe(":10000", nil))
+	log.Fatal(http.ListenAndServe(port, nil))
 }
 
 func main() {
 	channelName := "mychannel"
 	chaincodeName := "vote"
 	walletName := "wallet"
-	orgUserId := "appUser"
 
 	// please give 'org1' or 'org2' as argument
-	org := os.Args[1]
+	org = os.Args[1]
 	var orgMSP string
+	var orgUserId string
+	var port string
 	if org == "org1" {
 		orgMSP = "Org1MSP"
-	} else {
+		orgUserId = "org1AppUser"
+		port = ":10000"
+	} else if org == "org2" {
 		orgMSP = "Org2MSP"
+		orgUserId = "org2AppUser"
+		port = ":10001"
+	} else {
+		log.Fatal("Error: Please give 'org1' or 'org2' as an argument")
 	}
 
 	log.Println("============ application-golang starts ============")
@@ -171,7 +178,7 @@ func main() {
 
 	contract = network.GetContract(chaincodeName)
 
-	handleRequests(contract)
+	handleRequests(contract, port)
 	log.Println("============ application-golang ends ============")
 }
 
