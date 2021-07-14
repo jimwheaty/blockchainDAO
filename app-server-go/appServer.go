@@ -49,26 +49,13 @@ func createVote(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	fmt.Println("Endpoint Hit: createVote")
-	// log.Println("--> Evaluate Transaction: VoteExists() checks if a vote exists in the ledger")
-	// result, err := contract.EvaluateTransaction("VoteExists", "vote1")
-	// if err != nil {
-	// 	fmt.Fprintf(w, "CreateVote failed: VoteExists failed")
-	// 	log.Fatalf("Failed to evaluate transaction: %v", err)
-	// }
-	// log.Println("VoteExists " + string(result))
 
-	var message string
-	// if string(result) == "false" {
 	log.Println("--> Submit Transaction: CreateVote() initializes a vote to the ledger")
 	result, err := contract.SubmitTransaction("CreateVote")
 	if err != nil {
-		log.Fatalf("Failed to Submit transaction: %v", err)
+		log.Printf("Failed to Submit transaction: %v", err)
 	}
-	// message = "Vote1 doesn't exist... \nCreateVote " + string(result)
-	message = "CreateVote" + string(result)
-	// } else {
-	// 	message = "Vote1 already exists..."
-	// }
+	message := "CreateVote" + string(result)
 	response := simpleResponse{Message: message}
 	json.NewEncoder(w).Encode(response)
 }
@@ -80,7 +67,7 @@ func readVote(w http.ResponseWriter, r *http.Request) {
 	log.Println("--> Evaluate Transaction: ReadVote() returns the vote stored in the world state with given id")
 	result, err := contract.EvaluateTransaction("ReadVote", "vote1")
 	if err != nil {
-		log.Fatalf("Failed to evaluate transaction: %v", err)
+		log.Printf("Failed to evaluate transaction: %v", err)
 	}
 	log.Println(string(result))
 	var message voteResponse
@@ -96,7 +83,7 @@ func doVote(w http.ResponseWriter, r *http.Request) {
 	log.Println("--> Submit Transaction: DoVote() updates an existing vote in the world state with provided id and vote field")
 	result, err := contract.SubmitTransaction("DoVote", org, "vote1", vote)
 	if err != nil {
-		log.Fatalf("Failed to Submit transaction: %v", err)
+		log.Printf("Failed to Submit transaction: %v", err)
 	}
 	// fmt.Fprint(w, "DoVote "+string(result))
 	message := "DoVote " + string(result)

@@ -7,7 +7,7 @@
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React from 'react';
-// import {Button, Container}from "react-bootstrap
+import {Button, Container, Form, Row, Col, Nav, Navbar} from "react-bootstrap"
 
 class App extends React.Component{
     constructor(props) {
@@ -19,23 +19,6 @@ class App extends React.Component{
             validOrg: false,
             url: ""
         }
-    }
-
-	homepage() {
-		fetch(this.state.url)
-            .then(res => res.json())
-            .then(
-                (result) => {
-                    this.setState({
-                        message: result.message
-                    });
-                },
-                (error) => {
-                    this.setState({
-                        error
-                    });
-                }
-            )
     }
 
     readVote() {
@@ -101,7 +84,6 @@ class App extends React.Component{
             url = "http://localhost:10001"
             this.setState({org: org, url: url, validOrg: true})
         }
-        
     }
 
     handleOrgChange = (e) => {this.setState({org: e.target.value})}
@@ -112,30 +94,40 @@ class App extends React.Component{
             return <h1>org: {org}, url: {url}, Error: {error.message}</h1>;
         } else if (!validOrg)
             return (
-                <form>
-                    <label>
-                        Name:
-                        <input type="text" name="org" onChange={(event) => this.handleOrgChange(event)} />
-                    </label>
-                    <input type="submit" value="Submit" onClick={() => this.handleOrgSubmit()} />
-                </form>
+                <Row className="justify-content-md-center">
+                    <Col sm={8}>
+                        <Form>
+                            <Form.Group>
+                                <Form.Label>Your organization</Form.Label>
+                                <Form.Control type="text" placeholder="Enter 'org1' or 'org2'" onChange={(event) => this.handleOrgChange(event)}/>
+                            </Form.Group>
+                            <Button onClick={() => this.handleOrgSubmit()} >
+                                Submit
+                            </Button>
+                        </Form>
+                    </Col>
+                </Row>
+
             )
         else {
             return (
-                <div>
-                    {/* {this.homepage()} */}
-                    <h1>logged in as {org} user1, url={url}</h1> 
+                <Container>
+                    <Navbar bg="dark" expand="lg" variant="dark" className="justify-content-between">
+                        <Nav>
+                            <Navbar.Text>Signed in as: {org} user1, url={url}</Navbar.Text>
+                        </Nav>
+                    </Navbar>
                     <h2>{message}</h2>
-                    <button onClick={() => this.readVote()}>
+                    <Button onClick={() => this.readVote()} style={{marginRight:10}}>
                         Read Vote1
-                    </button>
-                    <button onClick={() => this.createVote()}>
+                    </Button>
+                    <Button onClick={() => this.createVote()} style={{marginRight:10}}>
                         Create Vote1
-                    </button>
-                    <button onClick={() => this.doVote()}>
+                    </Button>
+                    <Button onClick={() => this.doVote()}>
                         Vote yes in vote1
-                    </button>
-                </div>
+                    </Button>
+                </Container>
             );
         }
 	}
