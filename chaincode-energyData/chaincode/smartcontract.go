@@ -18,7 +18,7 @@ type energyData struct {
 	Energy string `json:"energy"`
 }
 
-// PostData initializes a vote to the ledger
+// PostData posts new energy data to the ledger
 func (s *SmartContract) PostData(ctx contractapi.TransactionContextInterface, org string, timestamp string, energy string) error {
 	data := energyData{
 		ID:     org + "." + timestamp,
@@ -38,8 +38,8 @@ func (s *SmartContract) PostData(ctx contractapi.TransactionContextInterface, or
 	return nil
 }
 
-// ReadVote returns the vote stored in the world state with given id.
-func (s *SmartContract) ReadVote(ctx contractapi.TransactionContextInterface, id string) (*energyData, error) {
+// ReadData returns the energy data stored in the world state with given id.
+func (s *SmartContract) ReadData(ctx contractapi.TransactionContextInterface, id string) (*energyData, error) {
 	dataJSON, err := ctx.GetStub().GetState(id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read from world state: %v", err)

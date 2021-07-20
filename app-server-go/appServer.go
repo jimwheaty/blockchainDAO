@@ -19,7 +19,8 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 )
 
-var contract *gateway.Contract
+var voteContract *gateway.Contract
+var energyDataContract *gateway.Contract
 var org string
 var vote string = "yes"
 
@@ -42,7 +43,7 @@ func createVote(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: createVote")
 
 	log.Println("--> Submit Transaction: CreateVote() initializes a vote to the ledger")
-	result, err := contract.SubmitTransaction("CreateVote")
+	result, err := voteContract.SubmitTransaction("CreateVote")
 	if err != nil {
 		log.Printf("Failed to Submit transaction: %v", err)
 	}
@@ -56,7 +57,7 @@ func doVote(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	fmt.Println("Endpoint Hit: doVote")
 	log.Println("--> Submit Transaction: DoVote() updates an existing vote in the world state with provided id and vote field")
-	result, err := contract.SubmitTransaction("DoVote", org, "vote1", vote)
+	result, err := voteContract.SubmitTransaction("DoVote", org, "vote1", vote)
 	if err != nil {
 		log.Printf("Failed to Submit transaction: %v", err)
 	}
@@ -80,7 +81,7 @@ func readVote(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	fmt.Println("Endpoint Hit: readVote")
 	log.Println("--> Evaluate Transaction: ReadVote() returns the vote stored in the world state with given id")
-	result, err := contract.EvaluateTransaction("ReadVote", "vote1")
+	result, err := voteContract.EvaluateTransaction("ReadVote", "vote1")
 	if err != nil {
 		log.Printf("Failed to evaluate transaction: %v", err)
 	}
@@ -106,7 +107,7 @@ func postEnergyData(w http.ResponseWriter, r *http.Request) {
 	log.Println("--> Submit Transaction: PostData() adds new energy data in the world state")
 	var data energyData
 	json.NewDecoder(r.Body).Decode(&data)
-	result, err := contract.SubmitTransaction("PostData", org, data.Timestamp, data.Energy)
+	result, err := energyDataContract.SubmitTransaction("PostData", org, data.Timestamp, data.Energy)
 	if err != nil {
 		log.Printf("Failed to Submit transaction: %v", err)
 	}
@@ -115,18 +116,49 @@ func postEnergyData(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func handleRequests(contract *gateway.Contract, port string) {
+type energyDataResponse struct {
+	ID     string `json:"id"`
+	Energy string `json:"energy"`
+}
+type monthlyEnergyDataResponse struct {
+	Data []energyDataResponse `json:"data"`
+}
+
+func getEnergyData(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(w, "Method is not supported.", http.StatusNotFound)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	fmt.Println("Endpoint Hit: GetMonthlyData")
+	log.Println("--> Evaluate Transaction: GetMonthlyData() gets the energy data for a month given year, month")
+
+	result, err := energyDataContract.EvaluateTransaction("GetMonthlyData", org, "2021", "01")
+	if err != nil {
+		log.Printf("Failed to Evaluate transaction: %v", err)
+	}
+
+	print(string(result))
+	var message monthlyEnergyDataResponse
+	json.Unmarshal(result, &message)
+	fmt.Println(message)
+	json.NewEncoder(w).Encode(message)
+}
+
+func handleRequests(port string) {
 	http.HandleFunc("/", homePage)
 	http.HandleFunc("/create", createVote)
 	http.HandleFunc("/read", readVote)
 	http.HandleFunc("/do", doVote)
-	http.HandleFunc("/energyData", postEnergyData)
+	http.HandleFunc("/postEnergyData", postEnergyData)
+	http.HandleFunc("/getEnergyData", getEnergyData)
 	log.Fatal(http.ListenAndServe(port, nil))
 }
 
 func main() {
 	channelName := "mychannel"
-	chaincodeName := "vote"
+	chaincodeVoteName := "vote"
+	chaincodeEnergyDataName := "energyData"
 	walletName := "wallet"
 
 	// please give 'org1' or 'org2' as argument
@@ -188,10 +220,11 @@ func main() {
 		log.Fatalf("Failed to get network: %v", err)
 	}
 
-	contract = network.GetContract(chaincodeName)
+	voteContract = network.GetContract(chaincodeVoteName)
+	energyDataContract = network.GetContract(chaincodeEnergyDataName)
 
 	fmt.Printf("Starting server at port " + port + "\n")
-	handleRequests(contract, port)
+	handleRequests(port)
 	log.Println("============ application-golang ends ============")
 }
 

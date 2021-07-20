@@ -1,4 +1,4 @@
-module github.com/jimwheaty/blockchainDAO/chaincode-vote
+module github.com/jimwheaty/blockchainDAO/chaincode-energyData
 
 go 1.16
 
