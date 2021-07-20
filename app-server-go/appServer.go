@@ -102,11 +102,11 @@ func postEnergyData(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	fmt.Println("Endpoint Hit: postEnergyData")
-	log.Println("--> Submit Transaction: postEnergyData() adds new energy data in the world state")
+	fmt.Println("Endpoint Hit: PostData")
+	log.Println("--> Submit Transaction: PostData() adds new energy data in the world state")
 	var data energyData
 	json.NewDecoder(r.Body).Decode(&data)
-	result, err := contract.SubmitTransaction("postEnergyData", org, data.Timestamp, data.Energy)
+	result, err := contract.SubmitTransaction("PostData", org, data.Timestamp, data.Energy)
 	if err != nil {
 		log.Printf("Failed to Submit transaction: %v", err)
 	}
