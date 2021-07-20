@@ -27,15 +27,6 @@ type simpleResponse struct {
 	Message string `json:"message"`
 }
 
-// Vote describes basic details of what makes up a simple vote
-type voteResponse struct {
-	ID         string            `json:"id"`
-	Message    string            `json:"message"`
-	Counter    map[string]int    `json:"counter"`
-	Board      map[string]string `json:"board"`
-	IsFinished bool              `json:"isFinished"`
-}
-
 func homePage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -60,6 +51,30 @@ func createVote(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+func doVote(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	fmt.Println("Endpoint Hit: doVote")
+	log.Println("--> Submit Transaction: DoVote() updates an existing vote in the world state with provided id and vote field")
+	result, err := contract.SubmitTransaction("DoVote", org, "vote1", vote)
+	if err != nil {
+		log.Printf("Failed to Submit transaction: %v", err)
+	}
+	// fmt.Fprint(w, "DoVote "+string(result))
+	message := "DoVote " + string(result)
+	response := simpleResponse{Message: message}
+	json.NewEncoder(w).Encode(response)
+}
+
+// Vote describes basic details of what makes up a simple vote
+type voteResponse struct {
+	ID         string            `json:"id"`
+	Message    string            `json:"message"`
+	Counter    map[string]int    `json:"counter"`
+	Board      map[string]string `json:"board"`
+	IsFinished bool              `json:"isFinished"`
+}
+
 func readVote(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -76,17 +91,26 @@ func readVote(w http.ResponseWriter, r *http.Request) {
 	// fmt.Fprint(w, string(result))
 }
 
-func doVote(w http.ResponseWriter, r *http.Request) {
+type energyData struct {
+	Timestamp string `json:"timestamp"`
+	Energy    string `json:"energy"`
+}
+
+func postEnergyData(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method is not supported.", http.StatusNotFound)
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	fmt.Println("Endpoint Hit: doVote")
-	log.Println("--> Submit Transaction: DoVote() updates an existing vote in the world state with provided id and vote field")
-	result, err := contract.SubmitTransaction("DoVote", org, "vote1", vote)
+	fmt.Println("Endpoint Hit: postEnergyData")
+	log.Println("--> Submit Transaction: postEnergyData() adds new energy data in the world state")
+	var data energyData
+	json.NewDecoder(r.Body).Decode(&data)
+	result, err := contract.SubmitTransaction("postEnergyData", org, data.Timestamp, data.Energy)
 	if err != nil {
 		log.Printf("Failed to Submit transaction: %v", err)
 	}
-	// fmt.Fprint(w, "DoVote "+string(result))
-	message := "DoVote " + string(result)
+	message := "postEnergyData " + string(result)
 	response := simpleResponse{Message: message}
 	json.NewEncoder(w).Encode(response)
 }
@@ -96,6 +120,7 @@ func handleRequests(contract *gateway.Contract, port string) {
 	http.HandleFunc("/create", createVote)
 	http.HandleFunc("/read", readVote)
 	http.HandleFunc("/do", doVote)
+	http.HandleFunc("/energyData", postEnergyData)
 	log.Fatal(http.ListenAndServe(port, nil))
 }
 
@@ -165,6 +190,7 @@ func main() {
 
 	contract = network.GetContract(chaincodeName)
 
+	fmt.Printf("Starting server at port " + port + "\n")
 	handleRequests(contract, port)
 	log.Println("============ application-golang ends ============")
 }
