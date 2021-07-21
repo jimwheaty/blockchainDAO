@@ -7,7 +7,8 @@
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React from 'react';
-import {Button, Container, Form, Row, Col, Nav, Navbar} from "react-bootstrap"
+import {Button, Container, Form, Row, Col, Nav, Navbar, Card} from "react-bootstrap"
+import {VictoryAxis, VictoryLine, VictoryChart, VictoryTheme} from "victory";
 
 class App extends React.Component{
     constructor(props) {
@@ -17,7 +18,9 @@ class App extends React.Component{
             message: "",
             org: "",
             validOrg: false,
-            url: ""
+            url: "",
+            energyDataDay: [],
+            energyDataMonth: []
         }
     }
 
@@ -73,6 +76,41 @@ class App extends React.Component{
             )
     }
 
+    getEnergyData() {
+        fetch(this.state.url+"/getEnergyData")
+            .then(res => res.json())
+            .then(
+                (result) => {
+                    // questionStats.map(item => questionData.push({x: parseInt(item.day), y: parseInt(item.count)}));
+                    let energyDataDay = []
+                    let daySum = []
+                    let energyDataMonth = []
+                    result.map(item => {
+                        let day = item.ID[11]+item.ID[12]
+                        let time = item.ID[13]+item.ID[14]+':'+item.ID[15]+item.ID[16]
+                        let energy = parseInt(item.Energy)
+                        if (day == "01"){
+                            energyDataDay.push({x: time, y: energy})
+                        }
+                        daySum[parseInt(day)] += energy
+                        if (time == "23:45"){
+                            energyDataMonth.push({x: day, y: daySum})
+                        }
+                    })
+                    this.setState({
+                        energyDataDay: energyDataDay,
+                        energyDataMonth: energyDataMonth,
+                        message: JSON.stringify(result)
+                    });
+                },
+                (error) => {
+                    this.setState({
+                        error
+                    });
+                }
+            )
+    }
+
     handleOrgSubmit = (e) => {
         let org = this.state.org
         let url = ""
@@ -89,7 +127,7 @@ class App extends React.Component{
     handleOrgChange = (e) => {this.setState({org: e.target.value})}
 
 	render(){
-        const {error, message, org, validOrg, url} = this.state;
+        const {error, message, org, validOrg, url, energyDataDay, energyDataMonth} = this.state;
         if (error) {
             return <h1>org: {org}, url: {url}, Error: {error.message}</h1>;
         } else if (!validOrg)
@@ -117,6 +155,70 @@ class App extends React.Component{
                             <Navbar.Text>Signed in as: {org} user1, url={url}</Navbar.Text>
                         </Nav>
                     </Navbar>
+                    <br/>
+                    <Row>
+                        <Col sm={6}>
+                            <Card>
+                                <Card.Header>
+                                    Energy Data Today ! <br/>
+                                    Day: 01, Month: January, Year: 2021
+                                </Card.Header>
+                                <Card.Body>
+                                    <VictoryChart
+                                        theme={VictoryTheme.material}
+                                    >
+                                        <VictoryAxis crossAxis
+                                                        domain={[0, 96]}
+                                                        label="time"
+                                                        style={{tickLabels: {angle: 270, fontSize: 3}, axisLabel: {fontSize: 14, padding: 30}}}
+                                        />
+                                        <VictoryAxis dependentAxis crossAxis
+                                                        label="Energy Power (MW)"
+                                                        style={{tickLabels: {angle: 270, fontSize: 8}, axisLabel: {fontSize: 14, padding: 30}}}
+                                        />
+                                        <VictoryLine
+                                            style={{
+                                                data: { stroke: "#c43a31" },
+                                                parent: { border: "1px solid #ccc"}
+                                            }}
+                                            data={energyDataDay}
+                                        />
+                                    </VictoryChart>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                        <Col sm={6}>
+                            <Card>
+                                <Card.Header>
+                                    Energy Data of the Month ! <br/>
+                                    Month: January, Year: 2021
+                                </Card.Header>
+                                <Card.Body>
+                                    <VictoryChart
+                                        theme={VictoryTheme.material}
+                                    >
+                                        <VictoryAxis crossAxis
+                                                        domain={[0, 30]}
+                                                        label="day"
+                                                        style={{tickLabels: {angle: 270, fontSize: 3}, axisLabel: {fontSize: 14, padding: 30}}}
+                                        />
+                                        <VictoryAxis dependentAxis crossAxis
+                                                        label="Average Energy Power (MW)"
+                                                        style={{tickLabels: {angle: 270, fontSize: 8}, axisLabel: {fontSize: 14, padding: 30}}}
+                                        />
+                                        <VictoryLine
+                                            style={{
+                                                data: { stroke: "#c43a31" },
+                                                parent: { border: "1px solid #ccc"}
+                                            }}
+                                            // barWidth={8}
+                                            data={energyDataMonth}
+                                        />
+                                    </VictoryChart>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                    </Row>
                     <h2>{message}</h2>
                     <Button onClick={() => this.readVote()} style={{marginRight:10}}>
                         Read Vote1
@@ -124,8 +226,11 @@ class App extends React.Component{
                     <Button onClick={() => this.createVote()} style={{marginRight:10}}>
                         Create Vote1
                     </Button>
-                    <Button onClick={() => this.doVote()}>
+                    <Button onClick={() => this.doVote()} style={{marginRight:10}}> 
                         Vote yes in vote1
+                    </Button>
+                    <Button onClick={() => this.getEnergyData()}>
+                        fetch my energy data
                     </Button>
                 </Container>
             );

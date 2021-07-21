@@ -117,11 +117,8 @@ func postEnergyData(w http.ResponseWriter, r *http.Request) {
 }
 
 type energyDataResponse struct {
-	ID     string `json:"id"`
-	Energy string `json:"energy"`
-}
-type monthlyEnergyDataResponse struct {
-	Data []energyDataResponse `json:"data"`
+	ID     string
+	Energy string
 }
 
 func getEnergyData(w http.ResponseWriter, r *http.Request) {
@@ -138,10 +135,8 @@ func getEnergyData(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Failed to Evaluate transaction: %v", err)
 	}
 
-	print(string(result))
-	var message monthlyEnergyDataResponse
+	var message []energyDataResponse
 	json.Unmarshal(result, &message)
-	fmt.Println(message)
 	json.NewEncoder(w).Encode(message)
 }
 

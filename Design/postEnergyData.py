@@ -15,7 +15,7 @@ def postEnergyData():
     file.readline()
 
     for line in file.readlines():
-        timestamp, energy = line.split(', ')
+        timestamp, energy = line.split('\n')[0].split(', ')
         payload = {
             "timestamp": str(timestamp),
             "energy" : str(energy)
@@ -23,7 +23,7 @@ def postEnergyData():
         x = requests.post(url, json = payload)
         print(x.text)
         #sleep for 50 miliseconds
-        time.sleep(.05)                             
+        # time.sleep(.05)                             
 
     file.close()
 

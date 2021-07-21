@@ -10,8 +10,6 @@ def getEnergyData():
     else :
         url = 'http://localhost:10001/getEnergyData'
    
-    # payload = {'key1': '', 'key2': 'value2'}
-    # x = requests.get(url, params=payload)
     x = requests.get(url)
     print(x.text)
     #sleep for 50 miliseconds
