@@ -104,7 +104,7 @@ func (s *SmartContract) DoVote(ctx contractapi.TransactionContextInterface, addr
 		if vote.Counter["yes"] > (vote.Counter["no"] + vote.Counter[""]) {
 			vote.Message = "The vote is done. The result is Yes. \nCalculating percentages, please wait ..."
 			vote.IsFinished = true
-			percentages, err := s.CalculatePercentages(ctx)
+			percentages, err := s.calculatePercentages(ctx)
 			if err != nil {
 				return err
 			}
@@ -129,7 +129,7 @@ func (s *SmartContract) DoVote(ctx contractapi.TransactionContextInterface, addr
 }
 
 // calculatePercentages calculates the percentages for each organization of the energy data in the world state
-func (s *SmartContract) CalculatePercentages(ctx contractapi.TransactionContextInterface) (percentages string, error error) {
+func (s *SmartContract) calculatePercentages(ctx contractapi.TransactionContextInterface) (percentages string, error error) {
 	var args [][]byte
 	args = append(args, []byte("GetMonthlyData"))
 	args = append(args, []byte("org1"))
