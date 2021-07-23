@@ -74,21 +74,6 @@ class App extends React.Component{
             )
     }
 
-    calculatePercentages() {
-        fetch(this.state.url+"/calculatePercentages")
-            .then(res => res.json())
-            .then(
-                (result) => {
-                    alert(JSON.stringify(result.message))
-                },
-                (error) => {
-                    this.setState({
-                        error
-                    });
-                }
-            )
-    }
-
     getEnergyData() {
         fetch(this.state.url+"/getEnergyData")
             .then(res => res.json())
@@ -175,9 +160,6 @@ class App extends React.Component{
                         </Button>
                         <Button onClick={() => this.getEnergyData()}>
                             fetch my energy data
-                        </Button>
-                        <Button onClick={() => this.calculatePercentages()}>
-                            calculate percentages
                         </Button>
                     </Container>
                     <br/>
