@@ -15,7 +15,8 @@ class App extends React.Component{
         super(props);
         this.state = {
             error: null,
-            message: "",
+            voteID: "", 
+            voteMessage: "",
             org: "",
             validOrg: false,
             url: "",
@@ -30,8 +31,9 @@ class App extends React.Component{
             .then(
                 (result) => {
                     this.setState({
-                        message: JSON.stringify(result)
-                    });
+                        voteID: result.id,
+                        voteMessage: result.message
+                    })
                 },
                 (error) => {
                     alert(error)
@@ -47,9 +49,7 @@ class App extends React.Component{
             .then(res => res.json())
             .then(
                 (result) => {
-                    this.setState({
-                        message: result.message
-                    });
+                    alert(result.message)
                 },
                 (error) => {
                     this.setState({
@@ -64,9 +64,22 @@ class App extends React.Component{
             .then(res => res.json())
             .then(
                 (result) => {
+                    alert(result.message)
+                },
+                (error) => {
                     this.setState({
-                        message: result.message
+                        error
                     });
+                }
+            )
+    }
+
+    calculatePercentages() {
+        fetch(this.state.url+"/calculatePercentages")
+            .then(res => res.json())
+            .then(
+                (result) => {
+                    alert(JSON.stringify(result.message))
                 },
                 (error) => {
                     this.setState({
@@ -83,7 +96,7 @@ class App extends React.Component{
                 (result) => {
                     // questionStats.map(item => questionData.push({x: parseInt(item.day), y: parseInt(item.count)}));
                     let energyDataDay = []
-                    let daySum = []
+                    let daySum = 0
                     let energyDataMonth = []
                     result.map(item => {
                         let day = item.ID[11]+item.ID[12]
@@ -92,15 +105,15 @@ class App extends React.Component{
                         if (day == "01"){
                             energyDataDay.push({x: time, y: energy})
                         }
-                        daySum[parseInt(day)] += energy
+                        daySum += energy
                         if (time == "23:45"){
-                            energyDataMonth.push({x: day, y: daySum})
+                            energyDataMonth.push({x: day, y: daySum/96})
+                            daySum = 0
                         }
                     })
                     this.setState({
                         energyDataDay: energyDataDay,
                         energyDataMonth: energyDataMonth,
-                        message: JSON.stringify(result)
                     });
                 },
                 (error) => {
@@ -127,7 +140,7 @@ class App extends React.Component{
     handleOrgChange = (e) => {this.setState({org: e.target.value})}
 
 	render(){
-        const {error, message, org, validOrg, url, energyDataDay, energyDataMonth} = this.state;
+        const {error, org, validOrg, url, voteID, voteMessage, energyDataDay, energyDataMonth} = this.state;
         if (error) {
             return <h1>org: {org}, url: {url}, Error: {error.message}</h1>;
         } else if (!validOrg)
@@ -156,11 +169,41 @@ class App extends React.Component{
                         </Nav>
                     </Navbar>
                     <br/>
+                    <Container>
+                        <Button onClick={() => this.createVote()} style={{marginRight:10}}>
+                            Create Vote1
+                        </Button>
+                        <Button onClick={() => this.getEnergyData()}>
+                            fetch my energy data
+                        </Button>
+                        <Button onClick={() => this.calculatePercentages()}>
+                            calculate percentages
+                        </Button>
+                    </Container>
+                    <br/>
                     <Row>
-                        <Col sm={6}>
+                        <Col sm={2}>
                             <Card>
                                 <Card.Header>
-                                    Energy Data Today ! <br/>
+                                    {voteID}
+                                </Card.Header>
+                                <Card.Body>
+                                    {voteMessage}
+                                </Card.Body>
+                                <Card.Footer>
+                                    <Button onClick={() => this.doVote()} style={{marginRight:10}}> 
+                                        Vote yes
+                                    </Button>
+                                    <Button onClick={() => this.readVote()} style={{marginRight:10}}>
+                                        Refresh
+                                    </Button>
+                                </Card.Footer>
+                            </Card>
+                        </Col>
+                        <Col sm={5}>
+                            <Card>
+                                <Card.Header>
+                                    TODAY <br/>
                                     Day: 01, Month: January, Year: 2021
                                 </Card.Header>
                                 <Card.Body>
@@ -187,10 +230,10 @@ class App extends React.Component{
                                 </Card.Body>
                             </Card>
                         </Col>
-                        <Col sm={6}>
+                        <Col sm={5}>
                             <Card>
                                 <Card.Header>
-                                    Energy Data of the Month ! <br/>
+                                    THIS MONTH <br/>
                                     Month: January, Year: 2021
                                 </Card.Header>
                                 <Card.Body>
@@ -198,7 +241,7 @@ class App extends React.Component{
                                         theme={VictoryTheme.material}
                                     >
                                         <VictoryAxis crossAxis
-                                                        domain={[0, 30]}
+                                                        domain={[0, 31]}
                                                         label="day"
                                                         style={{tickLabels: {angle: 270, fontSize: 3}, axisLabel: {fontSize: 14, padding: 30}}}
                                         />
@@ -211,7 +254,6 @@ class App extends React.Component{
                                                 data: { stroke: "#c43a31" },
                                                 parent: { border: "1px solid #ccc"}
                                             }}
-                                            // barWidth={8}
                                             data={energyDataMonth}
                                         />
                                     </VictoryChart>
@@ -219,19 +261,6 @@ class App extends React.Component{
                             </Card>
                         </Col>
                     </Row>
-                    <h2>{message}</h2>
-                    <Button onClick={() => this.readVote()} style={{marginRight:10}}>
-                        Read Vote1
-                    </Button>
-                    <Button onClick={() => this.createVote()} style={{marginRight:10}}>
-                        Create Vote1
-                    </Button>
-                    <Button onClick={() => this.doVote()} style={{marginRight:10}}> 
-                        Vote yes in vote1
-                    </Button>
-                    <Button onClick={() => this.getEnergyData()}>
-                        fetch my energy data
-                    </Button>
                 </Container>
             );
         }

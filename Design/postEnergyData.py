@@ -9,7 +9,7 @@ def postEnergyData():
         url = 'http://localhost:10000/postEnergyData'
     else :
         url = 'http://localhost:10001/postEnergyData'
-    file = open("diploma.energy.data." + orgName + ".csv", "r")
+    file = open("diploma.energy.data." + orgName + ".small.csv", "r")
     org = file.readline().split(': ')[1]
     frequency = file.readline().split(': ')[1].split(' ')[0]
     file.readline()

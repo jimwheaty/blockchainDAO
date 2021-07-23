@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
@@ -20,6 +21,12 @@ type vote struct {
 	Counter    map[string]int    `json:"counter"`
 	Board      map[string]string `json:"board"`
 	IsFinished bool              `json:"isFinished"`
+}
+
+// energyData describes basic details of what makes up a simple energy data
+type energyData struct {
+	ID     string `json:"id"`
+	Energy string `json:"energy"`
 }
 
 // CreateVote initializes a vote to the ledger
@@ -97,11 +104,12 @@ func (s *SmartContract) DoVote(ctx contractapi.TransactionContextInterface, addr
 		if vote.Counter["yes"] > (vote.Counter["no"] + vote.Counter[""]) {
 			vote.Message = "The vote is done. The result is Yes. \nCalculating percentages, please wait ..."
 			vote.IsFinished = true
-			percentageOrg1, percentageOrg2, err := s.calculatePercentages(ctx)
+			percentages, err := s.CalculatePercentages(ctx)
 			if err != nil {
 				return err
 			}
-			vote.Message = "The vote is done. The result is Yes. \nOrganization1: " + percentageOrg1 + "%, Organization2: " + percentageOrg2 + "%"
+			percentagesArr := strings.Split(percentages, ",")
+			vote.Message = "The vote is done. The result is Yes. \nOrganization1: " + percentagesArr[0] + "%, Organization2: " + percentagesArr[1] + "%"
 		} else if vote.Counter["no"] > (vote.Counter["yes"] + vote.Counter[""]) {
 			vote.Message = "The vote is done. The result is No"
 			vote.IsFinished = true
@@ -121,39 +129,46 @@ func (s *SmartContract) DoVote(ctx contractapi.TransactionContextInterface, addr
 }
 
 // calculatePercentages calculates the percentages for each organization of the energy data in the world state
-func (s *SmartContract) calculatePercentages(ctx contractapi.TransactionContextInterface) (percentageOrg1 string, percentageOrg2 string, error error) {
-	energyDataOrg1, err := s.getMonthlyData(ctx, "org1", "2021", "01")
+func (s *SmartContract) CalculatePercentages(ctx contractapi.TransactionContextInterface) (percentages string, error error) {
+	var args [][]byte
+	args = append(args, []byte("GetMonthlyData"))
+	args = append(args, []byte("org1"))
+	args = append(args, []byte("2021"))
+	args = append(args, []byte("01"))
+	response := ctx.GetStub().InvokeChaincode("energyData", args, "mychannel")
+	var energyDataOrg1 []energyData
+	err := json.Unmarshal(response.Payload, &energyDataOrg1)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
-	energyDataOrg2, err := s.getMonthlyData(ctx, "org2", "2021", "01")
+	args[1] = []byte("org2")
+	response = ctx.GetStub().InvokeChaincode("energyData", args, "mychannel")
+	var energyDataOrg2 []energyData
+	err = json.Unmarshal(response.Payload, &energyDataOrg2)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
-
-	var energySumOrg1 float64
-	var energySumOrg2 float64
-	var datumFloat float64
+	var energySumOrg1 int
 	for _, datum := range energyDataOrg1 {
-		datumFloat, err = strconv.ParseFloat(datum.Energy, 64)
+		datumInt, err := strconv.Atoi(datum.Energy)
 		if err != nil {
-			return "", "", err
+			return "", err
 		}
-		energySumOrg1 += datumFloat
+		energySumOrg1 += datumInt
 	}
+
+	var energySumOrg2 int
 	for _, datum := range energyDataOrg2 {
-		datumFloat, err = strconv.ParseFloat(datum.Energy, 64)
+		datumInt, err := strconv.Atoi(datum.Energy)
 		if err != nil {
-			return "", "", err
+			return "", err
 		}
-		energySumOrg2 += datumFloat
+		energySumOrg2 += datumInt
 	}
-
 	energySum := energySumOrg1 + energySumOrg2
-	percentageOrg1 = strconv.FormatFloat(energySumOrg1/energySum, 'E', -1, 32)
-	percentageOrg2 = strconv.FormatFloat(energySumOrg2/energySum, 'E', -1, 32)
-
-	return percentageOrg1, percentageOrg2, nil
+	percentageOrg1 := strconv.Itoa(100 * energySumOrg1 / energySum)
+	percentageOrg2 := strconv.Itoa(100 * energySumOrg2 / energySum)
+	return percentageOrg1 + "," + percentageOrg2, nil
 }
 
 // voteExists returns true when vote with given ID exists in world state
@@ -164,40 +179,6 @@ func (s *SmartContract) voteExists(ctx contractapi.TransactionContextInterface, 
 	}
 
 	return voteJSON != nil, nil
-}
-
-// energyData describes basic details of what makes up a simple energy data
-type energyData struct {
-	ID     string `json:"id"`
-	Energy string `json:"energy"`
-}
-
-// getMonthlyData returns all energy data for the given month found in world state
-func (s *SmartContract) getMonthlyData(ctx contractapi.TransactionContextInterface, org string, year string, month string) ([]*energyData, error) {
-	startKey := org + "." + year + month + "010000"
-	endKey := org + "." + year + month + "312345"
-	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
-	if err != nil {
-		return nil, err
-	}
-	defer resultsIterator.Close()
-
-	var data []*energyData
-	for resultsIterator.HasNext() {
-		queryResponse, err := resultsIterator.Next()
-		if err != nil {
-			return nil, err
-		}
-
-		var datum energyData
-		err = json.Unmarshal(queryResponse.Value, &datum)
-		if err != nil {
-			return nil, err
-		}
-		data = append(data, &datum)
-	}
-
-	return data, nil
 }
 
 // // DeleteAsset deletes an given asset from the world state.

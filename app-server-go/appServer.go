@@ -140,6 +140,22 @@ func getEnergyData(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(message)
 }
 
+func calculatePercentages(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	fmt.Println("Endpoint Hit: calculatePercentages")
+	log.Println("--> Evaluate Transaction: calculatePercentages() calculates the percentages for each organization")
+
+	result, err := voteContract.EvaluateTransaction("CalculatePercentages")
+	if err != nil {
+		log.Printf("Failed to Evaluate transaction: %v", err)
+	}
+
+	message := "calculatePercentages " + string(result)
+	response := simpleResponse{Message: message}
+	json.NewEncoder(w).Encode(response)
+}
+
 func handleRequests(port string) {
 	http.HandleFunc("/", homePage)
 	http.HandleFunc("/create", createVote)
@@ -147,6 +163,7 @@ func handleRequests(port string) {
 	http.HandleFunc("/do", doVote)
 	http.HandleFunc("/postEnergyData", postEnergyData)
 	http.HandleFunc("/getEnergyData", getEnergyData)
+	http.HandleFunc("/calculatePercentages", calculatePercentages)
 	log.Fatal(http.ListenAndServe(port, nil))
 }
 
