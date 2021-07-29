@@ -11,12 +11,12 @@ cd test-network
 We will need 2 terminals.
 In the first terminal:
 ```sh
-cd app-server-go
+cd app-server-go &&
 go run appServer.go org1
 ```
 In the second terminal
 ```sh
-cd app-server-go
+cd app-server-go &&
 go run appServer.go org2
 ```
 
@@ -24,18 +24,18 @@ go run appServer.go org2
 We will need 2 terminals.
 In the first terminal:
 ```sh
-cd Design
+cd Design &&
 python3 postEnergyData.py org1
 ```
 In the second terminal:
 ```sh
-cd Design
+cd Design &&
 python3 postEnergyData.py org2
 ```
 
 ### Finally, we will open the UI for the 2 organizations
 ```sh
-cd react-app
+cd react-app &&
 npm start
 ```
 Now we can access the UI from localhost:3000
