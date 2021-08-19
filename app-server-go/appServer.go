@@ -106,7 +106,9 @@ func postEnergyData(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: PostData")
 	log.Println("--> Submit Transaction: PostData() adds new energy data in the world state")
 	var data energyData
+	println("r.Body=", r.Body)
 	json.NewDecoder(r.Body).Decode(&data)
+	println("timestamp,energy=", data.Timestamp+","+data.Energy)
 	result, err := energyDataContract.SubmitTransaction("PostData", org, data.Timestamp, data.Energy)
 	if err != nil {
 		log.Printf("Failed to Submit transaction: %v", err)
