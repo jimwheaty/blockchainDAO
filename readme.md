@@ -11,7 +11,7 @@ cd test-network
 We will need 2 terminals.
 In the first terminal:
 ```sh
-cd app-server-go &&
+cd app-server-go && 
 go run appServer.go org1
 ```
 In the second terminal
@@ -25,12 +25,12 @@ We will need 2 terminals.
 In the first terminal:
 ```sh
 cd Design &&
-python3 postEnergyData.py org1
+node postEnergyData.js org1
 ```
 In the second terminal:
 ```sh
 cd Design &&
-python3 postEnergyData.py org2
+node postEnergyData.js org2
 ```
 
 ### Finally, we will open the UI for the 2 organizations
