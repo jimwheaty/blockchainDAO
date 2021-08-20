@@ -18,11 +18,11 @@ postEnergyData = async () => {
             return console.log(err)
         let lines = data.split('\n')
         lines = lines.slice(3)
-        // sleep 1 second for every day. Otherwise the blockchain would block
-        // us as a malicious user
+        // Sleep half a second for every day
+        // Otherwise the blockchain would block us as a malicious user
         for (let day=1; day<=31; day++){
             await postEnergyDataPerDay(lines.slice(96*(day-1)+1, 96*day))
-            await sleep(1000)
+            await sleep(500)
         }
     })
 }

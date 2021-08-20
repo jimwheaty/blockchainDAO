@@ -3,6 +3,7 @@ package chaincode
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 
@@ -166,8 +167,8 @@ func (s *SmartContract) calculatePercentages(ctx contractapi.TransactionContextI
 		energySumOrg2 += datumInt
 	}
 	energySum := energySumOrg1 + energySumOrg2
-	percentageOrg1 := strconv.Itoa(100 * energySumOrg1 / energySum)
-	percentageOrg2 := strconv.Itoa(100 * energySumOrg2 / energySum)
+	percentageOrg1 := strconv.Itoa(int(math.Round(100.0 * float64(energySumOrg1) / float64(energySum))))
+	percentageOrg2 := strconv.Itoa(int(math.Round(100.0 * float64(energySumOrg2) / float64(energySum))))
 	return percentageOrg1 + "," + percentageOrg2, nil
 }
 
