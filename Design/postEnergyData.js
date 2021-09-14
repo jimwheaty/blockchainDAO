@@ -22,7 +22,7 @@ postEnergyData = async () => {
         // Otherwise the blockchain would block us as a malicious user
         for (let day=1; day<=31; day++){
             await postEnergyDataPerDay(lines.slice(96*(day-1)+1, 96*day))
-            await sleep(500)
+            await sleep(1000)
         }
     })
 }
