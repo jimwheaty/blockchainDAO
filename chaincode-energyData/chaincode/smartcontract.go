@@ -18,6 +18,58 @@ type energyData struct {
 	Energy string `json:"energy"`
 }
 
+// energyProductionPercentage describes the percentage of a energy producer compared to others
+type energyProductionPercentage struct {
+	Org        string `json:"Org"`
+	Percentage string `json:"percentage"`
+}
+
+// InitPercentage is called to initialize a fake percentage for simulation purposes
+func (s *SmartContract) InitPercentage(ctx contractapi.TransactionContextInterface, org string) (*energyProductionPercentage, error) {
+	var number string
+	if org == "org1" {
+		number = "40"
+	} else {
+		number = "60"
+	}
+
+	percentage := energyProductionPercentage{
+		Org:        org,
+		Percentage: number,
+	}
+
+	percentageJSON, err := json.Marshal(percentage)
+	if err != nil {
+		return nil, err
+	}
+
+	err = ctx.GetStub().PutState(percentage.Org, percentageJSON)
+	if err != nil {
+		return nil, fmt.Errorf("failed to put to world state. %v", err)
+	}
+
+	return &percentage, nil
+}
+
+// GetPercentage returns the energy production percentage of an energy producer
+func (s *SmartContract) GetPercentage(ctx contractapi.TransactionContextInterface, org string) (*energyProductionPercentage, error) {
+	percentageJSON, err := ctx.GetStub().GetState(org)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read from world state: %v", err)
+	}
+	if percentageJSON == nil {
+		return nil, fmt.Errorf("the energy data %s does not exist", org)
+	}
+
+	var percentage energyProductionPercentage
+	err = json.Unmarshal(percentageJSON, &percentage)
+	if err != nil {
+		return nil, err
+	}
+
+	return &percentage, nil
+}
+
 // PostData posts new energy data to the ledger
 func (s *SmartContract) PostData(ctx contractapi.TransactionContextInterface, org string, timestamp string, energy string) error {
 	data := energyData{

@@ -21,7 +21,8 @@ class App extends React.Component{
             validOrg: false,
             url: "",
             energyDataDay: [],
-            energyDataMonth: []
+            energyDataMonth: [],
+            prodPercentage: ""
         }
     }
 
@@ -114,18 +115,34 @@ class App extends React.Component{
         let url = ""
         if (org == "org1") {
             url = "http://localhost:10000"
-            this.setState({org: org, url: url, validOrg: true})
+            this.setState({org: org, url: url, validOrg: true}, () => {this.initPercentage()})
         }
         else if (org == "org2") {
             url = "http://localhost:10001"
-            this.setState({org: org, url: url, validOrg: true})
+            this.setState({org: org, url: url, validOrg: true}, () => {this.initPercentage()})
         }
     }
 
     handleOrgChange = (e) => {this.setState({org: e.target.value})}
 
+    initPercentage(){
+        fetch(this.state.url+"/initPercentage")
+            .then(res => res.json())
+            .then(
+                (result) => {
+                    this.setState({prodPercentage: result.Percentage})
+                },
+                (error) => {
+                    this.setState({
+                        error
+                    });
+                }
+            )
+
+    }
+
 	render(){
-        const {error, org, validOrg, url, voteID, voteMessage, energyDataDay, energyDataMonth} = this.state;
+        const {error, org, validOrg, url, voteID, voteMessage, energyDataDay, energyDataMonth, prodPercentage} = this.state;
         if (error) {
             return <h1>org: {org}, url: {url}, Error: {error.message}</h1>;
         } else if (!validOrg)
@@ -134,7 +151,7 @@ class App extends React.Component{
                     <Col sm={8}>
                         <Form>
                             <Form.Group>
-                                <Form.Label>Your organization</Form.Label>
+                                <Form.Label>Your Organization</Form.Label>
                                 <Form.Control type="text" placeholder="Enter 'org1' or 'org2'" onChange={(event) => this.handleOrgChange(event)}/>
                             </Form.Group>
                             <Button onClick={() => this.handleOrgSubmit()} >
@@ -143,7 +160,6 @@ class App extends React.Component{
                         </Form>
                     </Col>
                 </Row>
-
             )
         else {
             return (
@@ -152,6 +168,7 @@ class App extends React.Component{
                         <Nav>
                             <Navbar.Text>Signed in as: {org} user1, url={url}</Navbar.Text>
                         </Nav>
+                        <Navbar.Text> My production Percentage: {prodPercentage} </Navbar.Text>
                     </Navbar>
                     <br/>
                     <Container>

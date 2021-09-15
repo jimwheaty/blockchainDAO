@@ -140,6 +140,47 @@ func getEnergyData(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(message)
 }
 
+type percentageResponse struct {
+	Org        string
+	Percentage string
+}
+
+func getPercentage(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(w, "Method is not supported.", http.StatusNotFound)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	fmt.Println("Endpoint Hit: getPercentage")
+	log.Println("--> Evaluate Transaction: getPercentage() gets the energy production percentage of a given organization")
+
+	result, err := energyDataContract.EvaluateTransaction("GetPercentage", org)
+	if err != nil {
+		log.Printf("Failed to Evaluate transaction: %v", err)
+	}
+
+	var message percentageResponse
+	json.Unmarshal(result, &message)
+	json.NewEncoder(w).Encode(message)
+}
+
+func initPercentage(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(w, "Method is not supported.", http.StatusNotFound)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	fmt.Println("Endpoint Hit: initPercentage")
+	log.Println("--> Submit Transaction: initPercentage() initializes the production percentage of the given organization in the world state")
+	result, err := energyDataContract.SubmitTransaction("InitPercentage", org)
+	if err != nil {
+		log.Printf("Failed to Submit transaction: %v", err)
+	}
+	var message percentageResponse
+	json.Unmarshal(result, &message)
+	json.NewEncoder(w).Encode(message)
+}
+
 func handleRequests(port string) {
 	http.HandleFunc("/", homePage)
 	http.HandleFunc("/create", createVote)
@@ -147,6 +188,8 @@ func handleRequests(port string) {
 	http.HandleFunc("/do", doVote)
 	http.HandleFunc("/postEnergyData", postEnergyData)
 	http.HandleFunc("/getEnergyData", getEnergyData)
+	http.HandleFunc("/initPercentage", initPercentage)
+	http.HandleFunc("/getPercentage", getPercentage)
 	log.Fatal(http.ListenAndServe(port, nil))
 }
 
