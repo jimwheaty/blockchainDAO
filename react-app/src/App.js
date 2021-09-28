@@ -22,7 +22,9 @@ class App extends React.Component{
             url: "",
             energyDataDay: [],
             energyDataMonth: [],
-            prodPercentage: ""
+            prodPercentage: "",
+            day: "01",
+            dayItems: []
         }
     }
 
@@ -80,7 +82,6 @@ class App extends React.Component{
             .then(res => res.json())
             .then(
                 (result) => {
-                    // questionStats.map(item => questionData.push({x: parseInt(item.day), y: parseInt(item.count)}));
                     let energyDataDay = []
                     let daySum = 0
                     let energyDataMonth = []
@@ -88,12 +89,11 @@ class App extends React.Component{
                         let day = item.ID[11]+item.ID[12]
                         let time = item.ID[13]+item.ID[14]+':'+item.ID[15]+item.ID[16]
                         let energy = parseInt(item.Energy)
-                        if (day == "01"){
+                        if (day == this.state.day)
                             energyDataDay.push({x: time, y: energy})
-                        }
                         daySum += energy
                         if (time == "23:45"){
-                            energyDataMonth.push({x: day, y: daySum/96})
+                            energyDataMonth.push({x: day, y: daySum/4})
                             daySum = 0
                         }
                     })
@@ -108,6 +108,12 @@ class App extends React.Component{
                     });
                 }
             )
+    }
+
+    onSelectDay(event) {
+        let day = event.target.value
+        day = (day <= 9) ? ("0"+day) : day;
+        this.setState({day})
     }
 
     handleOrgSubmit = (e) => {
@@ -139,6 +145,13 @@ class App extends React.Component{
                 }
             )
 
+    }
+
+    componentDidMount = () => {
+        let dayItems = []
+        for(let i=2; i<31; i++)
+            dayItems[i] = i
+        this.setState({dayItems})
     }
 
 	render(){
@@ -201,9 +214,18 @@ class App extends React.Component{
                         </Col>
                         <Col sm={5}>
                             <Card>
+                                <Form>
+                                    <Form.Label>Select a day !</Form.Label>
+                                    <Form.Control as="select" onChange={(e) => this.onSelectDay(e)}>
+                                        <option value={1}>1</option>
+                                        {this.state.dayItems.map(item => 
+                                            <option value={item}>{item}</option>
+                                        )}
+                                    </Form.Control>
+                                </Form>
                                 <Card.Header>
                                     TODAY <br/>
-                                    Day: 01, Month: January, Year: 2021
+                                    Day: {this.state.day}, Month: January, Year: 2021
                                 </Card.Header>
                                 <Card.Body>
                                     <VictoryChart

@@ -20,9 +20,9 @@ def createSimulationData(orgName, dataFrequency):
                     minute_ = str(minute)
                 timestamp = date_ + hour_ + minute_
                 if orgName == 'org1':
-                    energyProduction = str(randrange(1000, 1300))
+                    energyProduction = str(randrange(100, 130))
                 else :
-                    energyProduction = str(randrange(1700, 2000))
+                    energyProduction = str(randrange(170, 200))
                 file.write(timestamp + ', ' + energyProduction + '\n')
     file.close()
 
