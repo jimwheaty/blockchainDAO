@@ -1,7 +1,7 @@
 #!/bin/bash
 
+clear
 export COMPOSE_PROJECT_NAME="docker"
 ./network.sh down
-./network.sh up createChannel -ca
-./deploy_chaincode.sh vote
-./deploy_chaincode.sh energyData
+./network.sh up createChannel
+./network.sh deployCC -ccn energyDAO -ccp ../chaincode-energyDAO -ccl javascript

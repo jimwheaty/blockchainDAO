@@ -1,0 +1,13 @@
+{
+    "org1.202101010000": {
+        "owner": "org1MSP",
+        "data": {
+            timestamp: 202101010000,
+            ener
+        }
+    },
+    org.energyPercentage: {
+        "owner": "org1MSP",
+        "percentage": 37
+    }
+}

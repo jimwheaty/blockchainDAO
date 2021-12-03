@@ -1,0 +1,22 @@
+{
+  "name": "app-server-javascript",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start1": "ORG=1 nodemon app.js",
+    "start2": "ORG=2 nodemon app.js",
+    "start3": "ORG=3 nodemon app.js",
+    "start4": "ORG=4 nodemon app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "fabric-ca-client": "^2.2.4",
+    "fabric-network": "^2.2.4",
+    "nodemon": "^2.0.15"
+  }
+}
