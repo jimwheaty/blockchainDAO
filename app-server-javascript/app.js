@@ -13,7 +13,6 @@ const { getContracts } = require('./utils/getContracts');
 module.exports.handler = async(res, contract, transactionType, ...args) => {
 	try {
 		let responseBody = await contracts[contract][transactionType](...args)
-		// await contracts.energyData.submitTrasaction('PostData', JSON.stringify(req.body)')
 		res.status(200).send({ success: responseBody.toString()})
 	} catch(error) {
 		console.error(error); 
@@ -28,7 +27,7 @@ async function main(){
 	const port = 10000+Number(orgNum)
 	contracts = await getContracts(orgNum)
 	
-	let allowedOrigins = { origin: 'http://localhost' }
+	let allowedOrigins = { origin: ['http://localhost:3000', 'http://172.20.78.79:3000', 'http://localhost:3001', 'http://172.20.78.79:3001', 'http://localhost:3002', 'http://172.20.78.79:3002', 'http://localhost:3003', 'http://172.20.78.79:3003'] }
 	app.use(cors(allowedOrigins))
 	app.use(express.json())
 	app.use(express.urlencoded({ extended: true }))

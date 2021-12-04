@@ -1,45 +1,49 @@
-/*
- * Copyright IBM Corp. All Rights Reserved.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-
-
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React from 'react';
 import {Button, Container, Form, Row, Col, Nav, Navbar, Card} from "react-bootstrap"
 import {VictoryAxis, VictoryLine, VictoryChart, VictoryTheme} from "victory";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 class App extends React.Component{
     constructor(props) {
         super(props);
         this.state = {
             error: null,
-            voteID: "", 
-            voteMessage: "",
             org: "",
-            validOrg: false,
             url: "",
+            voteMessage: "",
             energyDataDay: [],
             energyDataMonth: [],
-            prodPercentage: "",
-            day: "01",
-            dayItems: []
+            prodPercentage: "0",
+            dayItems: [],
+	    selectedDate: new Date(),
+	    selectedDay: '',
+	    selectedMonth: '', 
+	    selectedYear: ''
         }
     }
 
+    componentDidMount() {
+	let org = process.env.REACT_APP_ORG
+        let url = `http://172.20.78.79:${process.env.REACT_APP_PORT}`
+        this.setState({ org, url })
+
+	this.setDate(this.state.selectedDate)
+    }
+
     readVote() {
-        fetch(this.state.url+"/read")
+        fetch(this.state.url+"/vote")
             .then(res => res.json())
             .then(
                 (result) => {
+		    let vote = JSON.parse(result.success)
+		    console.log(result)
                     this.setState({
-                        voteID: result.id,
-                        voteMessage: result.message
+                        voteMessage: vote.Message
                     })
                 },
                 (error) => {
-                    alert(error)
                     this.setState({
                         error
                     });
@@ -48,7 +52,22 @@ class App extends React.Component{
     }
 
     createVote() {
-        fetch(this.state.url+"/create")
+        fetch(this.state.url+"/vote/init")
+            .then(res => res.json())
+            .then(
+                (result) => {
+                    alert(result.Message)
+                },
+                (error) => {
+                    this.setState({
+                        error
+                    });
+                }
+            )
+    }
+
+    doVote(proposal) {
+        fetch(this.state.url + '/vote/' + proposal) //http:localhost:3000/vote/yes
             .then(res => res.json())
             .then(
                 (result) => {
@@ -62,34 +81,29 @@ class App extends React.Component{
             )
     }
 
-    doVote() {
-        fetch(this.state.url+"/do")
-            .then(res => res.json())
-            .then(
-                (result) => {
-                    alert(result.message)
-                },
-                (error) => {
-                    this.setState({
-                        error
-                    });
-                }
-            )
+    setDate(selectedDate) {
+	var selectedDay = String(selectedDate.getDate()).padStart(2, '0');
+   	let selectedMonth = String(selectedDate.getMonth() + 1).padStart(2, '0');
+    	let selectedYear = selectedDate.getFullYear();
+	this.setState({ selectedDate, selectedDay, selectedMonth, selectedYear })
     }
 
-    getEnergyData() {
-        fetch(this.state.url+"/getEnergyData")
+    getEnergyData(month, year) {
+        fetch(`${this.state.url}/energyData/${month}/${year}`)
             .then(res => res.json())
             .then(
                 (result) => {
+		    console.log(result)
+		    let dataArray = JSON.parse(result.success)
+		    console.log('dataArray'+dataArray)
                     let energyDataDay = []
                     let daySum = 0
                     let energyDataMonth = []
-                    result.map(item => {
-                        let day = item.ID[11]+item.ID[12]
-                        let time = item.ID[13]+item.ID[14]+':'+item.ID[15]+item.ID[16]
+                    dataArray.map(item => {
+                        let day = item.timestamp[11]+item.timestamp[12]
+                        let time = item.timestamp[13]+item.timestamp[14]+':'+item.timestamp[15]+item.timestamp[16]
                         let energy = parseInt(item.Energy)
-                        if (day == this.state.day)
+                        if (day == this.state.selectedDay)
                             energyDataDay.push({x: time, y: energy})
                         daySum += energy
                         if (time == "23:45"){
@@ -97,6 +111,8 @@ class App extends React.Component{
                             daySum = 0
                         }
                     })
+		    console.log('energyDataDay'+energyDataDay)
+		    console.log('energyDataMonth'+energyDataMonth)
                     this.setState({
                         energyDataDay: energyDataDay,
                         energyDataMonth: energyDataMonth,
@@ -110,83 +126,23 @@ class App extends React.Component{
             )
     }
 
-    onSelectDay(event) {
-        let day = event.target.value
-        day = (day <= 9) ? ("0"+day) : day;
-        this.setState({day})
-    }
-
-    handleOrgSubmit = (e) => {
-        let org = this.state.org
-        let url = ""
-        if (org == "org1") {
-            url = "http://localhost:10000"
-            this.setState({org: org, url: url, validOrg: true}, () => {this.initPercentage()})
-        }
-        else if (org == "org2") {
-            url = "http://localhost:10001"
-            this.setState({org: org, url: url, validOrg: true}, () => {this.initPercentage()})
-        }
-    }
-
-    handleOrgChange = (e) => {this.setState({org: e.target.value})}
-
-    initPercentage(){
-        fetch(this.state.url+"/initPercentage")
-            .then(res => res.json())
-            .then(
-                (result) => {
-                    this.setState({prodPercentage: result.Percentage})
-                },
-                (error) => {
-                    this.setState({
-                        error
-                    });
-                }
-            )
-
-    }
-
-    componentDidMount = () => {
-        let dayItems = []
-        for(let i=2; i<31; i++)
-            dayItems[i] = i
-        this.setState({dayItems})
-    }
-
 	render(){
-        const {error, org, validOrg, url, voteID, voteMessage, energyDataDay, energyDataMonth, prodPercentage} = this.state;
+        const {error, org, url, voteMessage, energyDataDay, energyDataMonth, prodPercentage, selectedDay, selectedDate, selectedMonth, selectedYear } = this.state;
         if (error) {
             return <h1>org: {org}, url: {url}, Error: {error.message}</h1>;
-        } else if (!validOrg)
-            return (
-                <Row className="justify-content-md-center">
-                    <Col sm={8}>
-                        <Form>
-                            <Form.Group>
-                                <Form.Label>Your Organization</Form.Label>
-                                <Form.Control type="text" placeholder="Enter 'org1' or 'org2'" onChange={(event) => this.handleOrgChange(event)}/>
-                            </Form.Group>
-                            <Button onClick={() => this.handleOrgSubmit()} >
-                                Submit
-                            </Button>
-                        </Form>
-                    </Col>
-                </Row>
-            )
-        else {
+        } else {
             return (
                 <Container>
                     <Navbar bg="dark" expand="lg" variant="dark" className="justify-content-between">
                         <Nav>
                             <Navbar.Text>Signed in as: {org} user1, url={url}</Navbar.Text>
                         </Nav>
-                        <Navbar.Text> My production Percentage: {prodPercentage} </Navbar.Text>
+                        <Navbar.Text> My production Percentage: {prodPercentage}% </Navbar.Text>
                     </Navbar>
                     <br/>
                     <Container>
                         <Button onClick={() => this.createVote()} style={{marginRight:10}}>
-                            Create Vote1
+                            Initialise vote for percentages.
                         </Button>
                         <Button onClick={() => this.getEnergyData()}>
                             fetch my energy data
@@ -197,14 +153,17 @@ class App extends React.Component{
                         <Col sm={2}>
                             <Card>
                                 <Card.Header>
-                                    {voteID}
+                                    Vote for recalculation of percentages
                                 </Card.Header>
                                 <Card.Body>
                                     {voteMessage}
                                 </Card.Body>
                                 <Card.Footer>
-                                    <Button onClick={() => this.doVote()} style={{marginRight:10}}> 
-                                        Vote yes
+                                    <Button onClick={() => this.doVote('yes')} style={{marginRight:10}}> 
+                                        vote YES
+                                    </Button>
+                                    <Button onClick={() => this.doVote('no')} style={{marginRight:10}}> 
+                                        vote NO
                                     </Button>
                                     <Button onClick={() => this.readVote()} style={{marginRight:10}}>
                                         Refresh
@@ -214,18 +173,11 @@ class App extends React.Component{
                         </Col>
                         <Col sm={5}>
                             <Card>
-                                <Form>
-                                    <Form.Label>Select a day !</Form.Label>
-                                    <Form.Control as="select" onChange={(e) => this.onSelectDay(e)}>
-                                        <option value={1}>1</option>
-                                        {this.state.dayItems.map(item => 
-                                            <option value={item}>{item}</option>
-                                        )}
-                                    </Form.Control>
-                                </Form>
+		    		Please select a Date:
+		    		<DatePicker selected={selectedDate} onChange={(date) => this.setDate(date)} />
                                 <Card.Header>
-                                    TODAY <br/>
-                                    Day: {this.state.day}, Month: January, Year: 2021
+                                    THIS DAY <br/>
+                                    Day: {selectedDay}, Month: {selectedMonth}, Year: {selectedYear}
                                 </Card.Header>
                                 <Card.Body>
                                     <VictoryChart
@@ -255,7 +207,7 @@ class App extends React.Component{
                             <Card>
                                 <Card.Header>
                                     THIS MONTH <br/>
-                                    Month: January, Year: 2021
+                                    Month: {selectedMonth}, Year: {selectedYear}
                                 </Card.Header>
                                 <Card.Body>
                                     <VictoryChart

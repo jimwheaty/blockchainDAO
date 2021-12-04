@@ -1,10 +1,10 @@
 'use strict';
 
-const vote = require('./lib/vote');
-const energyData = require('./lib/energyData');
+const { VoteContract } = require('./lib/vote');
+const { EnergyDataContract } = require('./lib/energyData');
 
 module.exports = {
-    vote, 
-    energyData,
-    contracts: [vote, energyData]
+    VoteContract, 
+    EnergyDataContract,
+    contracts: [VoteContract, EnergyDataContract]
 }

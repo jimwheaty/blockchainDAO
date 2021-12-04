@@ -11,6 +11,7 @@
     "fabric-network": "^2.2.4",
     "react": "^17.0.2",
     "react-bootstrap": "^1.6.1",
+    "react-datepicker": "^4.5.0",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
     "victory": "^35.9.1",
@@ -18,10 +19,10 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "start1": "PORT=3000 REACT_APP_PORT=7051 REACT_APP_SM_FILE=EnergyData.json react-scripts start",
-    "start2": "PORT=3001 REACT_APP_PORT=7052 REACT_APP_SM_FILE=EnergyData1.json react-scripts start",
-    "start3": "PORT=3002 REACT_APP_PORT=7053 REACT_APP_SM_FILE=EnergyData2.json react-scripts start",
-    "start4": "PORT=3003 REACT_APP_PORT=7054 REACT_APP_SM_FILE=EnergyData3.json react-scripts start",
+    "start1": "PORT=3000 REACT_APP_ORG=Org1 REACT_APP_PORT=10001 react-scripts start",
+    "start2": "PORT=3001 REACT_APP_ORG=Org2 REACT_APP_PORT=10002 react-scripts start",
+    "start3": "PORT=3002 REACT_APP_ORG=Org3 REACT_APP_PORT=10003 react-scripts start",
+    "start4": "PORT=3003 REACT_APP_ORG=Org4 REACT_APP_PORT=10004 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

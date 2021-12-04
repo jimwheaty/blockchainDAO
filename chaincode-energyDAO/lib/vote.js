@@ -2,7 +2,7 @@
 
 const { Contract } = require('fabric-contract-api');
 const { ReadAsset, UpdateAsset, GetAllAssets } = require('./utils')
-const EnergyData = require('./energyData')
+const { GetMonthlyData, GetPercentage } = require('./energyData')
 
 const Organization = ['Org1MSP', 'Org2MSP', 'Org3MSP', 'Org4MSP']
 
@@ -19,7 +19,7 @@ const CalculatePercentages = async(ctx) => {
 
     let energySum = [0, 0, 0, 0];
     for (let i=0; i<4; i++){
-        let dataString = await EnergyData.GetMonthlyData(ctx, month, year)
+        let dataString = await GetMonthlyData(ctx, month, year)
         let data = JSON.parse(dataString)
         data.map(datum => energySum[i] += datum.energy)
     }
@@ -33,7 +33,7 @@ const CalculatePercentages = async(ctx) => {
     }
 }
 
-class Vote extends Contract {
+class VoteContract extends Contract {
     constructor() {
         super('energyDAO.vote')
     }
@@ -82,16 +82,16 @@ class Vote extends Contract {
         if (vote.Counter["yes"] > (vote.Counter["no"] + vote.Counter[""])) {
             vote.IsFinished = true
             await CalculatePercentages(ctx)
-            let myPercentageString = await EnergyData.GetPercentage(ctx)
+            let myPercentageString = await GetPercentage(ctx)
             vote.Message = `The vote is done. The result is Yes. \nMy new Percentage: ${myPercentageString}%`
         } else if (vote.Counter["no"] > (vote.Counter["yes"] + vote.Counter[""])){
             vote.IsFinished = true
             vote.Message = 'The vote is done. The result is No.'
         }
-        let voteString = JSON.stringify(vote)
+        voteString = JSON.stringify(vote)
         UpdateAsset(ctx, 'vote', voteString)
         return voteString
     }
 }
 
-module.exports = Vote;
+module.exports.VoteContract = VoteContract;
