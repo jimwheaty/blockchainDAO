@@ -22,7 +22,7 @@ async function postEnergyData(orgNum) {
     })
 }
 
-function postEnergyDataPerDay(lines) {
+async function postEnergyDataPerDay(lines) {
     lines.forEach(line => {
         let [timestamp, energy] = line.split('\n')[0].split(', ')
         const requestOptions = {
@@ -53,7 +53,10 @@ function postEnergyDataPerDay(lines) {
     })
 }
 
-postEnergyData('1')
-postEnergyData('2')
-postEnergyData('3')
-postEnergyData('4')
+async function main() {
+    await postEnergyData('1')
+    await postEnergyData('2')
+    await postEnergyData('3')
+    await postEnergyData('4')
+}
+main()

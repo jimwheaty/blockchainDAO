@@ -57,7 +57,9 @@ class Vote extends Contract {
             IsFinished: false
         }
         let UID = 'vote'
-        UpdateAsset(ctx, UID, JSON.stringify(vote));
+        let voteString = JSON.stringify(vote)
+        UpdateAsset(ctx, UID, voteString);
+        return voteString
     }
 
     async ReadVote(ctx) {
@@ -86,7 +88,9 @@ class Vote extends Contract {
             vote.IsFinished = true
             vote.Message = 'The vote is done. The result is No.'
         }
-        UpdateAsset(ctx, 'vote', JSON.stringify(vote))
+        let voteString = JSON.stringify(vote)
+        UpdateAsset(ctx, 'vote', voteString)
+        return voteString
     }
 }
 

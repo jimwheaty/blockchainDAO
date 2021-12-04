@@ -18,6 +18,10 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "start1": "PORT=3000 REACT_APP_PORT=7051 REACT_APP_SM_FILE=EnergyData.json react-scripts start",
+    "start2": "PORT=3001 REACT_APP_PORT=7052 REACT_APP_SM_FILE=EnergyData1.json react-scripts start",
+    "start3": "PORT=3002 REACT_APP_PORT=7053 REACT_APP_SM_FILE=EnergyData2.json react-scripts start",
+    "start4": "PORT=3003 REACT_APP_PORT=7054 REACT_APP_SM_FILE=EnergyData3.json react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

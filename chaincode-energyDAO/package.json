@@ -1,7 +1,7 @@
 {
-    "name": "asset-transfer-basic",
+    "name": "energy-dao",
     "version": "1.0.0",
-    "description": "Asset-Transfer-Basic contract implemented in JavaScript",
+    "description": "Energy-DAO contract implemented in JavaScript",
     "main": "index.js",
     "engines": {
         "node": ">=12",

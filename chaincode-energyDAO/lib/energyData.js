@@ -15,6 +15,7 @@ class EnergyData extends Contract {
         console.log(caller);
         let UID = caller + '.' + dataJSON.timestamp
         await UpdateAsset(ctx, UID, JSON.stringify(dataJSON));
+        return dataString
     }
 
     async GetMonthlyData(ctx, month, year) {

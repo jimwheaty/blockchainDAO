@@ -10,20 +10,23 @@ const voteRouter = require('./routes/voteRouter')
 // import Utilities
 const { getContracts } = require('./utils/getContracts');
 
-exports.handler = async(res, func,...args) => {
+module.exports.handler = async(res, contract, transactionType, ...args) => {
 	try {
-		let responseBody = await func(...args)
-		res.status(200).send({ success: responseBody})
-	} catch(error) { 
-		res.send({ error }) 
+		let responseBody = await contracts[contract][transactionType](...args)
+		// await contracts.energyData.submitTrasaction('PostData', JSON.stringify(req.body)')
+		res.status(200).send({ success: responseBody.toString()})
+	} catch(error) {
+		console.error(error); 
+		res.send({ error: error.toString() }) 
 	}
 }
 
+let contracts;
 async function main(){
 	// set variables based on the organization number (1 or 2 or 3 or 4)
 	const orgNum = process.env.ORG
 	const port = 10000+Number(orgNum)
-	exports.contracts = getContracts(orgNum)
+	contracts = await getContracts(orgNum)
 	
 	let allowedOrigins = { origin: 'http://localhost' }
 	app.use(cors(allowedOrigins))
