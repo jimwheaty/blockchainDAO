@@ -1,6 +1,8 @@
+/* eslint eqeqeq: "off" */
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React from 'react';
-import {Button, Container, Form, Row, Col, Nav, Navbar, Card} from "react-bootstrap"
+import {Button, Container, Row, Col, Nav, Navbar, Card} from "react-bootstrap"
 import {VictoryAxis, VictoryLine, VictoryChart, VictoryTheme} from "victory";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -13,23 +15,24 @@ class App extends React.Component{
             org: "",
             url: "",
             voteMessage: "",
+            voteCounter: "",
             energyDataDay: [],
             energyDataMonth: [],
             prodPercentage: "0",
             dayItems: [],
-	    selectedDate: new Date(),
-	    selectedDay: '',
-	    selectedMonth: '', 
-	    selectedYear: ''
+            selectedDate: new Date(),
+            selectedDay: '',
+            selectedMonth: '', 
+            selectedYear: ''
         }
     }
 
     componentDidMount() {
 	let org = process.env.REACT_APP_ORG
-        let url = `http://172.20.78.79:${process.env.REACT_APP_PORT}`
+        let url = `http://localhost:${process.env.REACT_APP_PORT}`
         this.setState({ org, url })
 
-	this.setDate(this.state.selectedDate)
+	    this.setDate(this.state.selectedDate)
     }
 
     readVote() {
@@ -37,10 +40,9 @@ class App extends React.Component{
             .then(res => res.json())
             .then(
                 (result) => {
-		    let vote = JSON.parse(result.success)
-		    console.log(result)
                     this.setState({
-                        voteMessage: vote.Message
+                        voteMessage: result.Message,
+                        voteCounter: JSON.stringify(result.Counter)
                     })
                 },
                 (error) => {
@@ -56,7 +58,7 @@ class App extends React.Component{
             .then(res => res.json())
             .then(
                 (result) => {
-                    alert(result.Message)
+                    this.readVote()
                 },
                 (error) => {
                     this.setState({
@@ -71,7 +73,7 @@ class App extends React.Component{
             .then(res => res.json())
             .then(
                 (result) => {
-                    alert(result.message)
+                    this.readVote()
                 },
                 (error) => {
                     this.setState({
@@ -88,21 +90,22 @@ class App extends React.Component{
 	this.setState({ selectedDate, selectedDay, selectedMonth, selectedYear })
     }
 
-    getEnergyData(month, year) {
-        fetch(`${this.state.url}/energyData/${month}/${year}`)
+    getEnergyData() {
+        let { selectedMonth, selectedYear } = this.state;
+        fetch(`${this.state.url}/energyData/${selectedMonth}/${selectedYear}`)
             .then(res => res.json())
             .then(
-                (result) => {
-		    console.log(result)
-		    let dataArray = JSON.parse(result.success)
-		    console.log('dataArray'+dataArray)
+                (dataItems) => {
+                    console.log("dataItems=",dataItems)
+                    // let dataItems = JSON.parse(result)
+                    // console.log('dataItems'+dataItems)
                     let energyDataDay = []
                     let daySum = 0
                     let energyDataMonth = []
-                    dataArray.map(item => {
-                        let day = item.timestamp[11]+item.timestamp[12]
-                        let time = item.timestamp[13]+item.timestamp[14]+':'+item.timestamp[15]+item.timestamp[16]
-                        let energy = parseInt(item.Energy)
+                    Object.values(dataItems).forEach(item => {
+                        let day = item.timestamp[6]+item.timestamp[7]
+                        let time = item.timestamp[8]+item.timestamp[9]+':'+item.timestamp[10]+item.timestamp[11]
+                        let energy = parseInt(item.energy)
                         if (day == this.state.selectedDay)
                             energyDataDay.push({x: time, y: energy})
                         daySum += energy
@@ -111,8 +114,6 @@ class App extends React.Component{
                             daySum = 0
                         }
                     })
-		    console.log('energyDataDay'+energyDataDay)
-		    console.log('energyDataMonth'+energyDataMonth)
                     this.setState({
                         energyDataDay: energyDataDay,
                         energyDataMonth: energyDataMonth,
@@ -127,7 +128,7 @@ class App extends React.Component{
     }
 
 	render(){
-        const {error, org, url, voteMessage, energyDataDay, energyDataMonth, prodPercentage, selectedDay, selectedDate, selectedMonth, selectedYear } = this.state;
+        const {error, org, url, voteMessage, voteCounter, energyDataDay, energyDataMonth, prodPercentage, selectedDay, selectedDate, selectedMonth, selectedYear } = this.state;
         if (error) {
             return <h1>org: {org}, url: {url}, Error: {error.message}</h1>;
         } else {
@@ -157,6 +158,7 @@ class App extends React.Component{
                                 </Card.Header>
                                 <Card.Body>
                                     {voteMessage}
+                                    {voteCounter}
                                 </Card.Body>
                                 <Card.Footer>
                                     <Button onClick={() => this.doVote('yes')} style={{marginRight:10}}> 

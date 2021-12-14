@@ -265,17 +265,11 @@ approveForMyOrg 4
 ## check whether the chaincode definition is ready to be committed
 ## expect them both to have approved
 checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true"
-checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true"
-checkCommitReadiness 3 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true"
-checkCommitReadiness 4 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true"
 
 ## now that we know for sure both orgs have approved, commit the definition
 commitChaincodeDefinition 1 2 3 4
 
 ## query on both orgs to see that the definition committed successfully
 queryCommitted 1
-queryCommitted 2
-queryCommitted 3
-queryCommitted 4
 
 exit 0

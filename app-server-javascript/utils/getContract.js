@@ -3,7 +3,7 @@ const { buildCCP, buildWallet } = require('./utils');
 const { Gateway, Wallets } = require('fabric-network');
 const fs = require('fs');
 
-exports.getContracts = async (orgNum) => {
+exports.getContract = async (orgNum) => {
     const walletPath = './wallet';
     const orgMSP = "Org"+orgNum+"MSP"
     const orgName = "org"+orgNum
@@ -39,9 +39,8 @@ exports.getContracts = async (orgNum) => {
 		const network = await gateway.getNetwork("mychannel");
 
 		// Return the contract from the network.
-		const vote = network.getContract("energyDAO", "energyDAO.vote");
-		const energyData = network.getContract("energyDAO", "energyDAO.energyData");
-		return { vote, energyData }
+		const energyDAOcontract = network.getContract("energyDAO");
+		return energyDAOcontract
 	} catch (error) {
 		console.error(`******** FAILED in function getContracts(): ${error}`);
 	}
