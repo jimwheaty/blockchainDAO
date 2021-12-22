@@ -36,7 +36,7 @@ class App extends React.Component{
     }
 
     readVote() {
-        fetch(this.state.url+"/vote")
+	fetch(this.state.url+"/vote")
             .then(res => res.json())
             .then(
                 (result) => {
@@ -44,6 +44,16 @@ class App extends React.Component{
                         voteMessage: result.Message,
                         voteCounter: JSON.stringify(result.Counter)
                     })
+		    if (result.IsFinished){
+                        fetch(this.state.url+"/energyData/percentage")
+                        .then(res => res.json())
+                        .then(
+                            (result) => {
+                            this.setState({
+                                prodPercentage: result
+                            })
+                        })
+                    }
                 },
                 (error) => {
                     this.setState({
@@ -84,10 +94,10 @@ class App extends React.Component{
     }
 
     setDate(selectedDate) {
-	var selectedDay = String(selectedDate.getDate()).padStart(2, '0');
-   	let selectedMonth = String(selectedDate.getMonth() + 1).padStart(2, '0');
-    	let selectedYear = selectedDate.getFullYear();
-	this.setState({ selectedDate, selectedDay, selectedMonth, selectedYear })
+        var selectedDay = String(selectedDate.getDate()).padStart(2, '0');
+        let selectedMonth = String(selectedDate.getMonth() + 1).padStart(2, '0');
+            let selectedYear = selectedDate.getFullYear();
+        this.setState({ selectedDate, selectedDay, selectedMonth, selectedYear })
     }
 
     getEnergyData() {

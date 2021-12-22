@@ -1,6 +1,6 @@
 fs = require('fs')
 fetch = require('node-fetch')
-
+let sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 async function postEnergyData(orgNum) {
     let url = `http://localhost:1000${orgNum}/energyData`
 
@@ -10,8 +10,9 @@ async function postEnergyData(orgNum) {
             return console.log(err)
         let lines = data.split('\n')
         lines = lines.slice(3)
-        for (let day=1; day<=5; day++){
+        for (let day=1; day<=31; day++){
             await postEnergyDataPerDay(url, lines.slice(96*(day-1), 96*day))
+            await sleep(1000)
         }
     })
 }
