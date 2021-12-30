@@ -12,7 +12,6 @@ async function postEnergyData(orgNum) {
         lines = lines.slice(3)
         for (let day=1; day<=31; day++){
             await postEnergyDataPerDay(url, lines.slice(96*(day-1), 96*day))
-            await sleep(1000)
         }
     })
 }
@@ -39,6 +38,7 @@ async function postEnergyDataPerDay(url, lines) {
         }
         const data = await response.json()
         console.log(data)
+	await sleep(500)
     })
 }
 

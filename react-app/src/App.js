@@ -183,67 +183,72 @@ class App extends React.Component{
                                 </Card.Footer>
                             </Card>
                         </Col>
-                        <Col sm={5}>
-                            <Card>
-		    		Please select a Date:
-		    		<DatePicker selected={selectedDate} onChange={(date) => this.setDate(date)} />
-                                <Card.Header>
-                                    THIS DAY <br/>
-                                    Day: {selectedDay}, Month: {selectedMonth}, Year: {selectedYear}
-                                </Card.Header>
-                                <Card.Body>
-                                    <VictoryChart
-                                        theme={VictoryTheme.material}
-                                    >
-                                        <VictoryAxis crossAxis
-                                                        domain={[0, 96]}
-                                                        label="time"
-                                                        style={{tickLabels: {angle: 270, fontSize: 3}, axisLabel: {fontSize: 14, padding: 30}}}
-                                        />
-                                        <VictoryAxis dependentAxis crossAxis
-                                                        label="Energy Power (MW)"
-                                                        style={{tickLabels: {angle: 270, fontSize: 8}, axisLabel: {fontSize: 14, padding: 30}}}
-                                        />
-                                        <VictoryLine
-                                            style={{
-                                                data: { stroke: "#c43a31" },
-                                                parent: { border: "1px solid #ccc"}
-                                            }}
-                                            data={energyDataDay}
-                                        />
-                                    </VictoryChart>
-                                </Card.Body>
-                            </Card>
-                        </Col>
-                        <Col sm={5}>
-                            <Card>
-                                <Card.Header>
-                                    THIS MONTH <br/>
-                                    Month: {selectedMonth}, Year: {selectedYear}
-                                </Card.Header>
-                                <Card.Body>
-                                    <VictoryChart
-                                        theme={VictoryTheme.material}
-                                    >
-                                        <VictoryAxis crossAxis
-                                                        domain={[0, 31]}
-                                                        label="day"
-                                                        style={{tickLabels: {angle: 270, fontSize: 3}, axisLabel: {fontSize: 14, padding: 30}}}
-                                        />
-                                        <VictoryAxis dependentAxis crossAxis
-                                                        label="Average Energy Power (MW)"
-                                                        style={{tickLabels: {angle: 270, fontSize: 8}, axisLabel: {fontSize: 14, padding: 30}}}
-                                        />
-                                        <VictoryLine
-                                            style={{
-                                                data: { stroke: "#c43a31" },
-                                                parent: { border: "1px solid #ccc"}
-                                            }}
-                                            data={energyDataMonth}
-                                        />
-                                    </VictoryChart>
-                                </Card.Body>
-                            </Card>
+                        <Col sm={10}>
+                            Please select a Date:
+                            <DatePicker selected={selectedDate} onChange={(date) => this.setDate(date)} />
+                            <br/><br/>
+                            <Row>
+                                <Col>
+                                    <Card>
+                                        <Card.Header>
+                                            THIS DAY <br/>
+                                            Day: {selectedDay}, Month: {selectedMonth}, Year: {selectedYear}
+                                        </Card.Header>
+                                        <Card.Body>
+                                            <VictoryChart
+                                                theme={VictoryTheme.material}
+                                            >
+                                                <VictoryAxis crossAxis
+                                                                domain={[0, 96]}
+                                                                label="time"
+                                                                style={{tickLabels: {angle: 270, fontSize: 3}, axisLabel: {fontSize: 14, padding: 30}}}
+                                                />
+                                                <VictoryAxis dependentAxis crossAxis
+                                                                label="Energy Power (MW)"
+                                                                style={{tickLabels: {angle: 270, fontSize: 8}, axisLabel: {fontSize: 14, padding: 30}}}
+                                                />
+                                                <VictoryLine
+                                                    style={{
+                                                        data: { stroke: "#c43a31" },
+                                                        parent: { border: "1px solid #ccc"}
+                                                    }}
+                                                    data={energyDataDay}
+                                                />
+                                            </VictoryChart>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+                                <Col>
+                                    <Card>
+                                        <Card.Header>
+                                            THIS MONTH <br/>
+                                            Month: {selectedMonth}, Year: {selectedYear}
+                                        </Card.Header>
+                                        <Card.Body>
+                                            <VictoryChart
+                                                theme={VictoryTheme.material}
+                                            >
+                                                <VictoryAxis crossAxis
+                                                                domain={[0, 31]}
+                                                                label="day"
+                                                                style={{tickLabels: {angle: 270, fontSize: 3}, axisLabel: {fontSize: 14, padding: 30}}}
+                                                />
+                                                <VictoryAxis dependentAxis crossAxis
+                                                                label="Average Energy Power (MW)"
+                                                                style={{tickLabels: {angle: 270, fontSize: 8}, axisLabel: {fontSize: 14, padding: 30}}}
+                                                />
+                                                <VictoryLine
+                                                    style={{
+                                                        data: { stroke: "#c43a31" },
+                                                        parent: { border: "1px solid #ccc"}
+                                                    }}
+                                                    data={energyDataMonth}
+                                                />
+                                            </VictoryChart>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+                            </Row>
                         </Col>
                     </Row>
                 </Container>
