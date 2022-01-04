@@ -204,7 +204,7 @@ class App extends React.Component{
                                                                 style={{tickLabels: {angle: 270, fontSize: 3}, axisLabel: {fontSize: 14, padding: 30}}}
                                                 />
                                                 <VictoryAxis dependentAxis crossAxis
-                                                                label="Energy Power (MW)"
+                                                                label="Energy (MWh)"
                                                                 style={{tickLabels: {angle: 270, fontSize: 8}, axisLabel: {fontSize: 14, padding: 30}}}
                                                 />
                                                 <VictoryLine
@@ -234,7 +234,7 @@ class App extends React.Component{
                                                                 style={{tickLabels: {angle: 270, fontSize: 3}, axisLabel: {fontSize: 14, padding: 30}}}
                                                 />
                                                 <VictoryAxis dependentAxis crossAxis
-                                                                label="Average Energy Power (MW)"
+                                                                label="Average Energy (MWh)"
                                                                 style={{tickLabels: {angle: 270, fontSize: 8}, axisLabel: {fontSize: 14, padding: 30}}}
                                                 />
                                                 <VictoryLine
