@@ -3,7 +3,7 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React from 'react';
 import {Button, Container, Row, Col, Nav, Navbar, Card} from "react-bootstrap"
-import {VictoryAxis, VictoryLine, VictoryChart, VictoryTheme} from "victory";
+import {VictoryAxis, VictoryLine, VictoryChart, VictoryTheme, VictoryLegend} from "victory";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -16,9 +16,12 @@ class App extends React.Component{
             url: "",
             voteMessage: "",
             voteCounter: "",
-            energyDataDay: [],
-            energyDataMonth: [],
-            prodPercentage: "0",
+            declarationDataDay: [],
+            productionDataDay: [],
+            declarationDataMonth: [],
+            productionDataMonth: [],
+            declarationPercentage: "0",
+            productionPercentage: "0",
             dayItems: [],
             selectedDate: new Date(),
             selectedDay: '',
@@ -36,7 +39,7 @@ class App extends React.Component{
     }
 
     readVote() {
-	fetch(this.state.url+"/vote")
+	    fetch(this.state.url+"/vote")
             .then(res => res.json())
             .then(
                 (result) => {
@@ -50,7 +53,8 @@ class App extends React.Component{
                         .then(
                             (result) => {
                             this.setState({
-                                prodPercentage: result
+                                declarationPercentage: result.declaration,
+                                productionPercentage: result.production
                             })
                         })
                     }
@@ -107,26 +111,32 @@ class App extends React.Component{
             .then(
                 (dataItems) => {
                     console.log("dataItems=",dataItems)
-                    // let dataItems = JSON.parse(result)
-                    // console.log('dataItems'+dataItems)
-                    let energyDataDay = []
-                    let daySum = 0
-                    let energyDataMonth = []
+                    let declarationDataDay = []
+                    let productionDataDay = []
+                    let declarationDaySum = 0
+                    let productionDaySum = 0
+                    let declarationDataMonth = []
+                    let productionDataMonth = []
                     Object.values(dataItems).forEach(item => {
                         let day = item.timestamp[6]+item.timestamp[7]
                         let time = item.timestamp[8]+item.timestamp[9]+':'+item.timestamp[10]+item.timestamp[11]
-                        let energy = parseInt(item.energy)
-                        if (day == this.state.selectedDay)
-                            energyDataDay.push({x: time, y: energy})
-                        daySum += energy
+                        let declaration = parseInt(item.declaration)
+                        let production = parseInt(item.production)
+                        if (day == this.state.selectedDay) {
+                            declarationDataDay.push({x: time, y: declaration})
+                            productionDataDay.push({x: time, y: production})
+                        }
+                        declarationDaySum += declaration
+                        productionDaySum += production
                         if (time == "23:45"){
-                            energyDataMonth.push({x: day, y: daySum/4})
-                            daySum = 0
+                            declarationDataMonth.push({x: day, y: declarationDaySum/4})
+                            productionDataMonth.push({x: day, y: productionDaySum/4})
+                            declarationDaySum = 0
+                            productionDaySum = 0
                         }
                     })
-                    this.setState({
-                        energyDataDay: energyDataDay,
-                        energyDataMonth: energyDataMonth,
+                    this.setState({ 
+                        declarationDataDay, productionDataDay, declarationDataMonth, productionDataMonth 
                     });
                 },
                 (error) => {
@@ -138,7 +148,7 @@ class App extends React.Component{
     }
 
 	render(){
-        const {error, org, url, voteMessage, voteCounter, energyDataDay, energyDataMonth, prodPercentage, selectedDay, selectedDate, selectedMonth, selectedYear } = this.state;
+        const {error, org, url, voteMessage, voteCounter, declarationDataDay, productionDataDay, declarationDataMonth, productionDataMonth, declarationPercentage, productionPercentage, selectedDay, selectedDate, selectedMonth, selectedYear } = this.state;
         if (error) {
             return <h1>org: {org}, url: {url}, Error: {error.message}</h1>;
         } else {
@@ -148,47 +158,43 @@ class App extends React.Component{
                         <Nav>
                             <Navbar.Text>Signed in as: {org} user1, url={url}</Navbar.Text>
                         </Nav>
-                        <Navbar.Text> My production Percentage: {prodPercentage}% </Navbar.Text>
+                        <Navbar.Text> Declaration: {declarationPercentage}%, Production: {productionPercentage}% </Navbar.Text>
                     </Navbar>
                     <br/>
-                    <Container>
-                        <Button onClick={() => this.createVote()} style={{marginRight:10}}>
-                            Initialise vote for percentages.
-                        </Button>
-                        <Button onClick={() => this.getEnergyData()}>
-                            fetch my energy data
-                        </Button>
-                    </Container>
+                    <Card>
+                        <Card.Header>
+                            <h3>Vote for recalculation of percentages</h3>
+                        </Card.Header>
+                        <Card.Body>
+                            {voteMessage}
+                            {voteCounter}
+                        </Card.Body>
+                        <Card.Footer>
+                            <Button onClick={() => this.createVote()} style={{marginRight:10}}>
+                                Initialize
+                            </Button>
+                            <Button onClick={() => this.doVote('yes')} style={{marginRight:10}}> 
+                                vote YES
+                            </Button>
+                            <Button onClick={() => this.doVote('no')} style={{marginRight:10}}> 
+                                vote NO
+                            </Button>
+                            <Button onClick={() => this.readVote()} style={{marginRight:10}}>
+                                Refresh
+                            </Button>
+                        </Card.Footer>
+                    </Card>
                     <br/>
-                    <Row>
-                        <Col sm={2}>
-                            <Card>
-                                <Card.Header>
-                                    Vote for recalculation of percentages
-                                </Card.Header>
-                                <Card.Body>
-                                    {voteMessage}
-                                    {voteCounter}
-                                </Card.Body>
-                                <Card.Footer>
-                                    <Button onClick={() => this.doVote('yes')} style={{marginRight:10}}> 
-                                        vote YES
-                                    </Button>
-                                    <Button onClick={() => this.doVote('no')} style={{marginRight:10}}> 
-                                        vote NO
-                                    </Button>
-                                    <Button onClick={() => this.readVote()} style={{marginRight:10}}>
-                                        Refresh
-                                    </Button>
-                                </Card.Footer>
-                            </Card>
-                        </Col>
-                        <Col sm={10}>
-                            Please select a Date:
+                    <Card>
+                        <Card.Header>
+                            <h3>My Energy Data</h3>
+                        </Card.Header>
+                        <Card.Body>
+                            <h4>Please select a Date:</h4>
                             <DatePicker selected={selectedDate} onChange={(date) => this.setDate(date)} />
                             <br/><br/>
                             <Row>
-                                <Col>
+                                <Col sm>
                                     <Card>
                                         <Card.Header>
                                             THIS DAY <br/>
@@ -198,6 +204,15 @@ class App extends React.Component{
                                             <VictoryChart
                                                 theme={VictoryTheme.material}
                                             >
+                                                <VictoryLegend x={80}
+                                                    orientation="horizontal"
+                                                    gutter={20}
+                                                    style={{ border: { stroke: "black" }, title: {fontSize: 20 } }}
+                                                    data={[
+                                                        { name: "Declaration", symbol: { fill: "red" } },
+                                                        { name: "Production", symbol: { fill: "blue" } }
+                                                    ]}
+                                                />
                                                 <VictoryAxis crossAxis
                                                                 domain={[0, 96]}
                                                                 label="time"
@@ -209,16 +224,23 @@ class App extends React.Component{
                                                 />
                                                 <VictoryLine
                                                     style={{
-                                                        data: { stroke: "#c43a31" },
+                                                        data: { stroke: "red" },
                                                         parent: { border: "1px solid #ccc"}
                                                     }}
-                                                    data={energyDataDay}
+                                                    data={declarationDataDay}
+                                                />
+                                                <VictoryLine
+                                                    style={{
+                                                        data: { stroke: "blue" },
+                                                        parent: { border: "1px solid #ccc"}
+                                                    }}
+                                                    data={productionDataDay}
                                                 />
                                             </VictoryChart>
                                         </Card.Body>
                                     </Card>
                                 </Col>
-                                <Col>
+                                <Col sm>
                                     <Card>
                                         <Card.Header>
                                             THIS MONTH <br/>
@@ -239,18 +261,31 @@ class App extends React.Component{
                                                 />
                                                 <VictoryLine
                                                     style={{
-                                                        data: { stroke: "#c43a31" },
+                                                        data: { stroke: "red" },
                                                         parent: { border: "1px solid #ccc"}
                                                     }}
-                                                    data={energyDataMonth}
+                                                    data={declarationDataMonth}
+                                                />
+                                                <VictoryLine
+                                                    style={{
+                                                        data: { stroke: "blue" },
+                                                        parent: { border: "1px solid #ccc"}
+                                                    }}
+                                                    data={productionDataMonth}
                                                 />
                                             </VictoryChart>
                                         </Card.Body>
                                     </Card>
                                 </Col>
                             </Row>
-                        </Col>
-                    </Row>
+                        </Card.Body>
+                        <Card.Footer>
+                            <Button onClick={() => this.getEnergyData()}>
+                                GET
+                            </Button>
+                        </Card.Footer>
+                    </Card> 
+                    <br/><br/>
                 </Container>
             );
         }

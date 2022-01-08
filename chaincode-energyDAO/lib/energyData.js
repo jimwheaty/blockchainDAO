@@ -11,7 +11,7 @@ const GetMonthlyDataPrivate = async(ctx, org, month, year) => {
     const endUID = org + "." + year + month + "312345"
     const dataString = await GetAssetDataByRange(ctx, startUID, endUID)
     console.log("dataString=", dataString);
-    return dataString // = {timestamp, energy}[]
+    return dataString // = {timestamp, declaration, production}[]
 }
 
 class EnergyData extends Contract {
@@ -59,7 +59,7 @@ class EnergyData extends Contract {
         if (vote.Counter["yes"] > (vote.Counter["no"] + vote.Counter[""])) {
             vote.IsFinished = true
             let percentages = await this.CalculatePercentages(ctx)
-            vote.Message = `The vote is done. The result is Yes. \nNew Production Percentages: Org1: ${percentages[0]}%, Org2: ${percentages[1]}%, Org3: ${percentages[2]}%, Org4: ${percentages[3]}%`
+            vote.Message = `The vote is done. The result is Yes. New Production Percentages: Org1: declaration: ${percentages[0].declaration}%, production: ${percentages[0].production}%, Org2: declaration: ${percentages[1].declaration}%, production: ${percentages[1].production}%\nOrg3: declaration: ${percentages[2].declaration}%, production: ${percentages[2].production}%\nOrg4: declaration: ${percentages[3].declaration}%, production: ${percentages[3].production}%`
         } else if (vote.Counter["no"] > (vote.Counter["yes"] + vote.Counter[""])){
             vote.IsFinished = true
             vote.Message = 'The vote is done. The result is No.'
@@ -108,7 +108,7 @@ class EnergyData extends Contract {
         const endUID = caller + "." + year + month + "312345"
         const dataString = await GetAssetDataByRange(ctx, startUID, endUID)
         console.log("dataString=", dataString);
-        return dataString // = {timestamp, energy}[]
+        return dataString // = {timestamp, declaration, production}[]
     }
 
     async GetPercentage(ctx) {
@@ -131,22 +131,40 @@ class EnergyData extends Contract {
             month -= 1
         }
         month = '01' // TODO: get rid of this!
-        year = '2021'
+        year = '2022'
     
-        let energySum = [0, 0, 0, 0];
+        let energySum = [
+            { declaration: 0, production: 0 },
+            { declaration: 0, production: 0 },
+            { declaration: 0, production: 0 },
+            { declaration: 0, production: 0 }
+        ]
         for (let i=0; i<4; i++){
             let dataString = await GetMonthlyDataPrivate(ctx, Organization[i], month, year)
             let data = JSON.parse(dataString)
-            Object.values(data).forEach(datum => energySum[i] += parseInt(datum.energy))
-            console.log("energySum["+i+"]:"+energySum[i])
+            Object.values(data).forEach(datum => {
+                energySum[i].declaration += parseInt(datum.declaration)
+                energySum[i].production += parseInt(datum.production)
+            })
+            console.log("energySum["+i+"]:"+JSON.stringify(energySum[i]))
         }
-        let energySumAll = energySum[0] + energySum[1] + energySum[2] + energySum[3]
-        console.log("energySumAll="+energySumAll);
-        let percentages = [0, 0, 0, 0];
+        
+        let energySumAll = {}
+        energySumAll.declaration = energySum[0].declaration + energySum[1].declaration + energySum[2].declaration + energySum[3].declaration
+        energySumAll.production = energySum[0].production + energySum[1].production + energySum[2].production + energySum[3].production
+        console.log("energySumAll="+JSON.stringify(energySumAll));
+        
+        let percentages = [
+            { declaration: 0, production: 0 },
+            { declaration: 0, production: 0 },
+            { declaration: 0, production: 0 },
+            { declaration: 0, production: 0 }
+        ]
         for (let i=0; i<4; i++){
-            percentages[i] = String(Math.round(100 * energySum[i] / energySumAll))
+            percentages[i].declaration = String(Math.round(100 * energySum[i].declaration / energySumAll.declaration))
+            percentages[i].production = String(Math.round(100 * energySum[i].production / energySumAll.production))
             let UID = Organization[i] + '.energyPercentage'
-            await UpdateAsset(ctx, UID, percentages[i])
+            await UpdateAsset(ctx, UID, JSON.stringify(percentages[i]))
             console.log(percentages[i])
         }
         return percentages
