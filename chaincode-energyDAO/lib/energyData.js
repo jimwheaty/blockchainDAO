@@ -1,7 +1,7 @@
 'use strict';
 
 const { Contract } = require('fabric-contract-api');
-const { ReadAsset, UpdateAsset, GetAssetDataByRange } = require('./utils')
+const { ReadAsset, UpdateAsset, GetAssetDataByRange, AssetExists } = require('./utils')
 
 const Organization = ['Org1MSP', 'Org2MSP', 'Org3MSP', 'Org4MSP']
 
@@ -69,14 +69,35 @@ class EnergyData extends Contract {
         return voteString
     }
 
-    async PostData(ctx, dataString) {
+    async PostDeclaration(ctx, dataString) {
         console.log(dataString);
         let dataJSON = JSON.parse(dataString)
         let caller = ctx.clientIdentity.getMSPID()
         console.log(caller);
         let UID = caller + '.' + dataJSON.timestamp
+        const exists = await AssetExists(ctx, UID);
+        if (exists) {
+            throw new Error(`The asset ${UID} already exists`);
+        }
         await UpdateAsset(ctx, UID, dataString);
         return dataString
+    }
+
+    async PostProduction(ctx, dataString) {
+        console.log(dataString);
+        let dataJSON = JSON.parse(dataString)
+        let caller = ctx.clientIdentity.getMSPID()
+        console.log(caller);
+        let UID = caller + '.' + dataJSON.timestamp
+        let assetString = await ReadAsset(ctx, UID)
+        let asset = JSON.parse(assetString)
+        if (!asset.declaration) {
+            throw new Error(`The asset ${UID}'s declaration does not exist`);
+        }
+        asset.production = dataJSON.production
+        assetString = JSON.stringify(asset)
+        await UpdateAsset(ctx, UID, assetString);
+        return assetString
     }
 
     async GetMonthlyData(ctx, month, year) {

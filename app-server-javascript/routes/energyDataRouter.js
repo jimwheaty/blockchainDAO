@@ -10,9 +10,14 @@ router.get('/:month/:year', (req,res) => {
     app.handler(res, 'evaluateTransaction', 'GetMonthlyData', month, year)
 })
 
-router.post('/', (req,res) => {
-    console.log('Endpoint POST /energyData was hit!');
-    app.handler(res, 'submitTransaction', 'PostData', JSON.stringify(req.body))
+router.post('/declaration', (req,res) => {
+    console.log('Endpoint POST /energyData/declaration was hit!');
+    app.handler(res, 'submitTransaction', 'PostDeclaration', JSON.stringify(req.body))
+})
+
+router.post('/production', (req,res) => {
+    console.log('Endpoint POST /energyData/production was hit!');
+    app.handler(res, 'submitTransaction', 'PostProduction', JSON.stringify(req.body))
 })
 
 router.get('/percentage', (req,res) => {

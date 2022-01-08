@@ -1,5 +1,11 @@
 'use strict';
 
+// AssetExists returns true when asset with given ID exists in world state.
+module.exports.AssetExists = async(ctx, UID) => {
+    const assetJSON = await ctx.stub.getState(UID);
+    return assetJSON && assetJSON.length > 0;
+}
+
 // ReadAsset returns the asset stored in the world state with given id.
 module.exports.ReadAsset = async(ctx, UID) => {
     const assetBuffer = await ctx.stub.getState(UID); // get the asset from chaincode state

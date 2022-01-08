@@ -19,16 +19,18 @@ async function postEnergyData(orgNum) {
 
 async function postEnergyDataPerDay(url, lines) {
     lines.forEach(async line => {
-        let [timestamp, energy] = line.split('\n')[0].split(', ')
-        const requestOptions = {
+        let [timestamp, declaration, production] = line.split('\n')[0].split(', ')
+        
+        // DECLARATION
+        let requestOptions = {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 "timestamp": timestamp.toString(),
-                "energy" : energy.toString()
+                "declaration" : declaration.toString(),
             })
 	    }
-        const response = await fetch(url, requestOptions)
+        let response = await fetch(url+'/declaration', requestOptions)
         if (!response.ok) {
             console.log('Fetch Error :-S', err);
             return
@@ -37,7 +39,22 @@ async function postEnergyDataPerDay(url, lines) {
             console.log('Looks like there was a problem. Status Code: ' + response.status)
             return
         }
-        const data = await response.json()
+
+        // PRODUCTION
+        requestOptions.body = JSON.stringify({
+            "timestamp": timestamp.toString(),
+            "production" : production.toString()
+        })
+        response = await fetch(url+'/production', requestOptions)
+        if (!response.ok) {
+            console.log('Fetch Error :-S', err);
+            return
+        }
+        if (response.status !== 200) {
+            console.log('Looks like there was a problem. Status Code: ' + response.status)
+            return
+        }
+        let data = await response.json()
         console.log(data)
     })
 }
