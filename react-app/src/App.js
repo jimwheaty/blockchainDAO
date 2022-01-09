@@ -45,7 +45,7 @@ class App extends React.Component{
                 (result) => {
                     this.setState({
                         voteMessage: result.Message,
-                        voteCounter: JSON.stringify(result.Counter)
+                        voteCounter: JSON.stringify(result.Counter, null, 4)
                     })
 		    if (result.IsFinished){
                         fetch(this.state.url+"/energyData/percentage")
@@ -166,8 +166,8 @@ class App extends React.Component{
                             <h3>Vote for recalculation of percentages</h3>
                         </Card.Header>
                         <Card.Body>
-                            {voteMessage}
-                            {voteCounter}
+                            <p style={{"white-space": "pre-wrap"}}>{voteMessage}</p>
+                            <pre><code>{voteCounter}</code></pre>
                         </Card.Body>
                         <Card.Footer>
                             <Button onClick={() => this.createVote()} style={{marginRight:10}}>

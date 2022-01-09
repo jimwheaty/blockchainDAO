@@ -59,7 +59,7 @@ class EnergyData extends Contract {
         if (vote.Counter["yes"] > (vote.Counter["no"] + vote.Counter[""])) {
             vote.IsFinished = true
             let percentages = await this.CalculatePercentages(ctx)
-            vote.Message = `The vote is done. The result is Yes. New Production Percentages: Org1: declaration: ${percentages[0].declaration}%, production: ${percentages[0].production}%, Org2: declaration: ${percentages[1].declaration}%, production: ${percentages[1].production}%\nOrg3: declaration: ${percentages[2].declaration}%, production: ${percentages[2].production}%\nOrg4: declaration: ${percentages[3].declaration}%, production: ${percentages[3].production}%`
+            vote.Message = `The vote is done. The result is Yes. \nNew Production Percentages: \nOrg1: Declaration: ${percentages[0].declaration}%, Production: ${percentages[0].production}%\nOrg2: Declaration: ${percentages[1].declaration}%, Production: ${percentages[1].production}%\nOrg3: Declaration: ${percentages[2].declaration}%, Production: ${percentages[2].production}%\nOrg4: Declaration: ${percentages[3].declaration}%, Production: ${percentages[3].production}%`
         } else if (vote.Counter["no"] > (vote.Counter["yes"] + vote.Counter[""])){
             vote.IsFinished = true
             vote.Message = 'The vote is done. The result is No.'
