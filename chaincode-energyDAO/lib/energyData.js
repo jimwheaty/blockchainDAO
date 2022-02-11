@@ -14,6 +14,54 @@ const GetMonthlyDataPrivate = async(ctx, org, month, year) => {
     return dataString // = {timestamp, declaration, production}[]
 }
 
+async CalculatePercentages(ctx) {
+	let today = new Date()
+	let month = String(today.getMonth() + 1).padStart(2, '0');
+	let year = today.getFullYear();
+	if (month == '01'){
+	    month = '12'
+	    year -= 1
+	} else {
+	    month -= 1
+	}
+
+	let energySum = [
+	    { declaration: 0, production: 0 },
+	    { declaration: 0, production: 0 },
+	    { declaration: 0, production: 0 },
+	    { declaration: 0, production: 0 }
+	]
+	for (let i=0; i<4; i++){
+	    let dataString = await GetMonthlyDataPrivate(ctx, Organization[i], month, year)
+	    let data = JSON.parse(dataString)
+	    Object.values(data).forEach(datum => {
+		energySum[i].declaration += parseInt(datum.declaration)
+		energySum[i].production += parseInt(datum.production)
+	    })
+	    console.log("energySum["+i+"]:"+JSON.stringify(energySum[i]))
+	}
+
+	let energySumAll = {}
+	energySumAll.declaration = energySum[0].declaration + energySum[1].declaration + energySum[2].declaration + energySum[3].declaration
+	energySumAll.production = energySum[0].production + energySum[1].production + energySum[2].production + energySum[3].production
+	console.log("energySumAll="+JSON.stringify(energySumAll));
+
+	let percentages = [
+	    { declaration: 0, production: 0 },
+	    { declaration: 0, production: 0 },
+	    { declaration: 0, production: 0 },
+	    { declaration: 0, production: 0 }
+	]
+	for (let i=0; i<4; i++){
+	    percentages[i].declaration = String(Math.round(100 * energySum[i].declaration / energySumAll.declaration))
+	    percentages[i].production = String(Math.round(100 * energySum[i].production / energySumAll.production))
+	    let UID = Organization[i] + '.energyPercentage'
+	    await UpdateAsset(ctx, UID, JSON.stringify(percentages[i]))
+	    console.log(percentages[i])
+	}
+	return percentages
+}
+
 class EnergyData extends Contract {
     async InitVote(ctx) {
         let caller = ctx.clientIdentity.getMSPID()
@@ -118,54 +166,6 @@ class EnergyData extends Contract {
         let percentageString = await ReadAsset(ctx, UID); // get the asset from chaincode state
         console.log(percentageString);
         return percentageString
-    }
-
-    async CalculatePercentages(ctx) {
-        let today = new Date()
-        let month = String(today.getMonth() + 1).padStart(2, '0');
-        let year = today.getFullYear();
-        if (month == '01'){
-            month = '12'
-            year -= 1
-        } else {
-            month -= 1
-        }
-    
-        let energySum = [
-            { declaration: 0, production: 0 },
-            { declaration: 0, production: 0 },
-            { declaration: 0, production: 0 },
-            { declaration: 0, production: 0 }
-        ]
-        for (let i=0; i<4; i++){
-            let dataString = await GetMonthlyDataPrivate(ctx, Organization[i], month, year)
-            let data = JSON.parse(dataString)
-            Object.values(data).forEach(datum => {
-                energySum[i].declaration += parseInt(datum.declaration)
-                energySum[i].production += parseInt(datum.production)
-            })
-            console.log("energySum["+i+"]:"+JSON.stringify(energySum[i]))
-        }
-        
-        let energySumAll = {}
-        energySumAll.declaration = energySum[0].declaration + energySum[1].declaration + energySum[2].declaration + energySum[3].declaration
-        energySumAll.production = energySum[0].production + energySum[1].production + energySum[2].production + energySum[3].production
-        console.log("energySumAll="+JSON.stringify(energySumAll));
-        
-        let percentages = [
-            { declaration: 0, production: 0 },
-            { declaration: 0, production: 0 },
-            { declaration: 0, production: 0 },
-            { declaration: 0, production: 0 }
-        ]
-        for (let i=0; i<4; i++){
-            percentages[i].declaration = String(Math.round(100 * energySum[i].declaration / energySumAll.declaration))
-            percentages[i].production = String(Math.round(100 * energySum[i].production / energySumAll.production))
-            let UID = Organization[i] + '.energyPercentage'
-            await UpdateAsset(ctx, UID, JSON.stringify(percentages[i]))
-            console.log(percentages[i])
-        }
-        return percentages
     }
 }
 
