@@ -16,14 +16,16 @@ const GetMonthlyDataPrivate = async(ctx, org, month, year) => {
 
 const CalculatePercentages = async(ctx) =>{
 	let today = new Date()
-	let month = String(today.getMonth() + 1).padStart(2, '0');
+	let month = today.getMonth() + 1
 	let year = today.getFullYear();
-	if (month == '01'){
-	    month = '12'
+	if (month == 1){
+	    month = 12
 	    year -= 1
 	} else {
 	    month -= 1
 	}
+    month = String(month).padStart(2, '0');
+    console.log("date=",month, year);
 
 	let energySum = [
 	    { declaration: 0, production: 0 },
@@ -106,7 +108,7 @@ class EnergyData extends Contract {
         
         if (vote.Counter["yes"] > (vote.Counter["no"] + vote.Counter[""])) {
             vote.IsFinished = true
-            let percentages = await this.CalculatePercentages(ctx)
+            let percentages = await CalculatePercentages(ctx)
             vote.Message = `The vote is done. The result is Yes. \nNew Production Percentages: \nOrg1: Declaration: ${percentages[0].declaration}%, Production: ${percentages[0].production}%\nOrg2: Declaration: ${percentages[1].declaration}%, Production: ${percentages[1].production}%\nOrg3: Declaration: ${percentages[2].declaration}%, Production: ${percentages[2].production}%\nOrg4: Declaration: ${percentages[3].declaration}%, Production: ${percentages[3].production}%`
         } else if (vote.Counter["no"] > (vote.Counter["yes"] + vote.Counter[""])){
             vote.IsFinished = true
