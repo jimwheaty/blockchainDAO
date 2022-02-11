@@ -14,7 +14,7 @@ const GetMonthlyDataPrivate = async(ctx, org, month, year) => {
     return dataString // = {timestamp, declaration, production}[]
 }
 
-async CalculatePercentages(ctx) {
+const CalculatePercentages = async(ctx) =>{
 	let today = new Date()
 	let month = String(today.getMonth() + 1).padStart(2, '0');
 	let year = today.getFullYear();
