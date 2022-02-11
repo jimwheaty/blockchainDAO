@@ -130,8 +130,6 @@ class EnergyData extends Contract {
         } else {
             month -= 1
         }
-        month = '01' // TODO: get rid of this!
-        year = '2022'
     
         let energySum = [
             { declaration: 0, production: 0 },
